@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "globalDefs.h"
+#include "handleMacro.h"
+
 int main(int argc, char** argv)
 {
     int i;
@@ -17,7 +20,35 @@ int main(int argc, char** argv)
             strcat(fullFileName, argv[i]);
             strcat(fullFileName, ".as");
 
-            printf("open file %s\n", fullFileName);
+            printf("handle file %s\n", fullFileName);
+
+            // Read all file data to string
+            char* srcFile = NULL;
+            char* dstFile = NULL;
+            FILE* file = NULL;
+            int fileSize = 0;
+            file = fopen(fullFileName, "r");
+
+            fseek(file, 0L, SEEK_END);
+            fileSize = ftell(file);
+
+            fseek(file, 0L, SEEK_SET);
+
+            srcFile = malloc(fileSize);
+            dstFile = malloc(fileSize);
+
+
+            if (handleMacros(srcFile, dstFile))
+            {
+                printf("done handle macros for %s\n", fullFileName);
+            }
+            else
+            {
+                printf("fail handle macros for %s\n", fullFileName);
+            }
+
+            free(srcFile);
+            free(dstFile);
         }
         else
         {

@@ -18,5 +18,16 @@
     <ClCompile Include="Assembler.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="handleMacro.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="handleMacro.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="globalDefs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

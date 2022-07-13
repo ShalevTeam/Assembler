@@ -20,6 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Assembler.c" />
+    <ClCompile Include="handleMacro.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="globalDefs.h" />
+    <ClInclude Include="handleMacro.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
