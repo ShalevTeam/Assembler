@@ -21,6 +21,9 @@
     <ClCompile Include="handleMacro.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="services.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="handleMacro.h">
@@ -29,5 +32,13 @@
     <ClInclude Include="globalDefs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="services.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="hello.as">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

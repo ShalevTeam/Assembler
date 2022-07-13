@@ -21,10 +21,15 @@
   <ItemGroup>
     <ClCompile Include="Assembler.c" />
     <ClCompile Include="handleMacro.c" />
+    <ClCompile Include="services.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="globalDefs.h" />
     <ClInclude Include="handleMacro.h" />
+    <ClInclude Include="services.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="hello.as" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
