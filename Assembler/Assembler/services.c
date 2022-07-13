@@ -24,3 +24,31 @@ int reallocAndCopyBuffer(char** allocatedBuf, int oldSize)
 
 	return newSize;
 }
+
+char* readLine(char* startPos, char* line)
+{
+	char* newStartPos = NULL;
+
+	char* endpos = strchr(startPos, '\n');
+
+	if (endpos == NULL)
+	{
+		return NULL;
+	}
+
+	int sizeToCopy = 1 + endpos - startPos;
+
+	if (sizeToCopy + 1 < MAX_LINE_LENGTH)
+	{
+		strncpy(line, startPos, sizeToCopy);
+		line[sizeToCopy] = 0;
+		newStartPos = endpos + 1;
+	}
+	else
+	{
+		printf("invalid line length\n");
+	}
+
+	return newStartPos;
+
+}

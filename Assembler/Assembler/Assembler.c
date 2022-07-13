@@ -113,24 +113,18 @@ EFuncResSucsessFail doFirstFileScan(char* fileData, SCodeElement** generatedCode
 
     // read line
     char* startPos = fileData;
-    char* endpos = strchr(fileData, '\n');
-    
-    while (endpos != NULL)
+
+    while (1)
     {
-        int sizeToCopy = 1 + endpos - startPos;
+        startPos = readLine(startPos,line);
 
-        if (sizeToCopy + 1 < MAX_LINE_LENGTH)
+        if (startPos != NULL)
         {
-            strncpy(line, startPos, sizeToCopy);
-            line[sizeToCopy] = 0;
-            startPos = endpos + 1;
-            endpos = strchr(startPos, '\n');
-
-            printf("Handle line%s", line);
+            printf("Handle line: %s", line);
         }
         else
         {
-            printf("invalid line length\n");
+            break;
         }
         
     }
