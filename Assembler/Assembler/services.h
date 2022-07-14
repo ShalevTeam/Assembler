@@ -6,6 +6,7 @@
 
 int reallocAndCopyBuffer(char** outFileData, int currSize);
 char* readLine(char* startPos,char* line);
+void initDataBase();
 
 
 #endif

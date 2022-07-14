@@ -1,5 +1,13 @@
 #include "services.h"
 
+SEntryElement* m_entryList = NULL; // List of all entry and there address
+SExternElement* m_externList = NULL; // List of all extern and there use
+STagParams* m_dataTagList = NULL; // list of all defined TAG in the code
+SCodeElement* m_codeList = NULL; // The code that was generated
+unsigned short DataSeqtion[MAX_ASSEBLER_FILE_SIZE]; // The data seq
+int codePos = 0;
+int dataPos = 0;
+
 int reallocAndCopyBuffer(char** allocatedBuf, int oldSize)
 {
 	int newSize = oldSize * 2;
@@ -50,5 +58,181 @@ char* readLine(char* startPos, char* line)
 	}
 
 	return newStartPos;
+}
 
+void initDataBase()
+{
+	while (m_entryList != NULL)
+	{
+		SEntryElement* pNextEntry = m_entryList->nextEelement;
+
+		free(m_entryList->tagName);
+		free(m_entryList);
+
+		m_entryList = pNextEntry;
+	}
+
+	while (m_externList != NULL)
+	{
+		SExternElement* pNextEntry = m_externList->nextEelement;
+
+		while (m_externList->externUseAddrList != NULL)
+		{
+			SAddressElement* pInternalNextEntry = m_externList->externUseAddrList->nextEelement;
+			
+			free(m_externList->externUseAddrList);
+
+			m_externList->externUseAddrList = pInternalNextEntry;
+		}
+
+		free(m_externList->tagName);
+		free(m_externList);
+
+		m_externList = pNextEntry;
+	}
+
+	while (m_dataTagList != NULL)
+	{
+		STagParams* pNextEntry = m_dataTagList->nextEelement;
+
+		free(m_dataTagList->tagName);
+		free(m_dataTagList);
+
+		m_dataTagList = pNextEntry;
+	}
+
+	while (m_codeList != NULL)
+	{
+		SCodeElement* pNextEntry = m_codeList->nextEelement;
+
+		free(m_codeList->tagName);
+		free(m_codeList);
+
+		m_codeList = pNextEntry;
+	}
+
+	memset(DataSeqtion, 0, sizeof(DataSeqtion));
+	codePos = CODE_INITIAL_ADDR;
+	dataPos = CODE_INITIAL_ADDR;
+}
+
+void addEntryElemet(unsigned short address,char* tagName)
+{
+	SEntryElement* latest = m_entryList;
+	SEntryElement* prev = m_entryList;
+
+	// Find the latest element
+	while (latest != NULL)
+	{
+		prev = latest;
+		latest = latest->nextEelement;
+	}
+
+	SEntryElement* newElem = malloc(sizeof(SEntryElement));
+
+	if (newElem)
+	{
+		if (prev != NULL)
+		{
+			prev->nextEelement = newElem;
+		}
+
+		newElem->address = address;
+		newElem->tagName = malloc(strlen(tagName) + 1);
+		if (newElem->tagName)
+		{
+			strcpy(newElem->tagName, tagName);
+			newElem->nextEelement = NULL;
+		}
+		else
+		{
+			printf("memory alloc fail\n");
+		}
+	}
+	else
+	{
+		printf("memory alloc fail\n");
+	}
+}
+
+void addExternElemet(unsigned short address, char* tagName)
+{
+	SExternElement* latest = m_externList;
+	SExternElement* prev = m_externList;
+	EFuncResSucsessFail tagFound = EFuncResFail;
+
+	// Check if the tag exist
+	while (latest != NULL)
+	{
+		if (strcmp(latest->tagName, tagName) == 0)
+		{
+			// Tag found
+			tagFound = EFuncResSucsess;
+			
+			// Find the latest at the use list
+			SAddressElement* addrcurr = latest->externUseAddrList;
+			SAddressElement* addrprev = latest->externUseAddrList;
+			while (addrcurr != NULL)
+			{
+				addrprev = addrcurr;
+				addrcurr = addrcurr->nextEelement;
+			}
+
+			// Set the new element
+			prev->nextEelement = malloc(sizeof(SAddressElement));
+
+			if (prev->nextEelement)
+			{
+				((SAddressElement*)prev->nextEelement)->address = address;
+				((SAddressElement*)prev->nextEelement)->nextEelement = NULL;
+				return;
+			}
+			else
+			{
+				printf("memory alloc fail\n");
+				return;
+			}
+			
+		}
+
+		latest = latest->nextEelement;
+	}
+
+	SExternElement* newElem = malloc(sizeof(SExternElement));
+
+	if (newElem)
+	{
+		if (prev != NULL)
+		{
+			prev->nextEelement = newElem;
+		}
+
+		// If we got here -> Generate new SExternElement element
+		newElem->tagName = malloc(strlen(tagName) + 1);
+		if (newElem->tagName)
+		{
+			strcpy(newElem->tagName, tagName);
+			newElem->nextEelement = NULL;
+		}
+		else
+		{
+			printf("memory alloc fail\n");
+		}
+
+		newElem->externUseAddrList = malloc(sizeof(SAddressElement));
+		if (newElem->externUseAddrList)
+		{
+			((SAddressElement*)newElem->externUseAddrList)->address = address;
+			((SAddressElement*)newElem->externUseAddrList)->nextEelement = NULL;
+			
+		}
+		else
+		{
+			printf("memory alloc fail\n");
+		}
+	}
+	else
+	{
+		printf("memory alloc fail\n");
+	}
 }

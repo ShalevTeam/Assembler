@@ -6,7 +6,8 @@
 // function declerations
 void processFile(char* fileName);
 void freeCodeList(SCodeElement* elemToFree);
-EFuncResSucsessFail doFirstFileScan(char* fileData, SCodeElement** generatedCode, int* codeLength);
+void analizeLineOfCode(int lineNumber,char* line);
+EFuncResSucsessFail doFirstFileScan(char* fileData);
 
 int main(int argc, char** argv)
 {
@@ -57,8 +58,6 @@ void processFile(char* fileName)
 
         char* rawCodeData = malloc(fileSize+1);
 
-        SCodeElement* codeList;
-
         if (rawCodeData)
         {
             rawCodeData[0] = '\0';
@@ -69,11 +68,13 @@ void processFile(char* fileName)
             // read all file data to struct SCodeElement
             fread(rawCodeData, fileSize+1, 1, file);
 
+            initDataBase();
+
             if (handleMacros(rawCodeData, &postProccesData))
             {
                 printf("done handle macros for %s\n", fileName);
 
-                if (doFirstFileScan(postProccesData, &codeList, &generatedCodeLength))
+                if (doFirstFileScan(postProccesData))
                 {
                     printf("done first file scan for %s\n", fileName);   
                 }
@@ -81,9 +82,6 @@ void processFile(char* fileName)
                 {
                     printf("fail on first file scan for %s\n", fileName);
                 }
-
-                // Free all the code list
-                freeCodeList(codeList);
 
                 free(postProccesData);
 
@@ -104,23 +102,27 @@ void processFile(char* fileName)
     }
 }
 
-EFuncResSucsessFail doFirstFileScan(char* fileData, SCodeElement** generatedCode,int* codeLength)
+EFuncResSucsessFail doFirstFileScan(char* fileData)
 {
     EFuncResSucsessFail scanStatus = EFuncResSucsess;
-    *generatedCode = NULL;
     char line[MAX_LINE_LENGTH];
     int lineLength = 0;
 
     // read line
     char* startPos = fileData;
+    int lineNumber = 0;
 
     while (1)
     {
+        lineNumber++;
+
         startPos = readLine(startPos,line);
 
         if (startPos != NULL)
         {
             printf("Handle line: %s", line);
+
+            analizeLineOfCode(lineNumber,line);
         }
         else
         {
@@ -140,5 +142,20 @@ void freeCodeList(SCodeElement* elemToFree)
         SCodeElement* next = elemToFree->nextEelement;
         free(elemToFree);
         elemToFree = next;
+    }
+}
+
+void analizeLineOfCode(int lineNumber, char* line)
+{
+    // First we chek the line type
+   // ELineType lineType = getLineType(lineNumber, line);
+
+    //if (lineType == ECodeLine)
+    {
+        //handleCodeLine(lineNumber, line);
+    }
+    //else
+    {
+        //handleInstructionLine(lineNumber, line);
     }
 }
