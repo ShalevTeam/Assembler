@@ -130,6 +130,11 @@ void addEntryElemet(unsigned short address,char* tagName)
 
 	SEntryElement* newElem = malloc(sizeof(SEntryElement));
 
+	if (m_entryList == NULL)
+	{
+		m_entryList = newElem;
+	}
+
 	if (newElem)
 	{
 		if (prev != NULL)
@@ -178,13 +183,19 @@ void addExternElemet(unsigned short address, char* tagName)
 				addrcurr = addrcurr->nextEelement;
 			}
 
-			// Set the new element
-			prev->nextEelement = malloc(sizeof(SAddressElement));
-
-			if (prev->nextEelement)
+			if (addrprev == NULL)
 			{
-				((SAddressElement*)prev->nextEelement)->address = address;
-				((SAddressElement*)prev->nextEelement)->nextEelement = NULL;
+				printf("unexpected null pointer\n");
+				return;
+			}
+
+			// Set the new element
+			addrprev->nextEelement = malloc(sizeof(SAddressElement));
+
+			if (addrprev->nextEelement)
+			{
+				((SAddressElement*)addrprev->nextEelement)->address = address;
+				((SAddressElement*)addrprev->nextEelement)->nextEelement = NULL;
 				return;
 			}
 			else
@@ -199,6 +210,11 @@ void addExternElemet(unsigned short address, char* tagName)
 	}
 
 	SExternElement* newElem = malloc(sizeof(SExternElement));
+
+	if (m_externList == NULL)
+	{
+		m_externList = newElem;
+	}
 
 	if (newElem)
 	{

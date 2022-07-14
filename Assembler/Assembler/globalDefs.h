@@ -28,40 +28,45 @@ typedef enum ECodeStatus
 	EWaitForTag = 1
 }ECodeStatus;
 
+struct SCodeElement;
 typedef struct SCodeElement
 {
 	unsigned short address;
 	unsigned short binaryCode;
 	char* tagName;
 	ECodeStatus Status;
-	void* nextEelement;
+	struct SCodeElement* nextEelement;
 }SCodeElement;
 
+struct SAddressElement;
 typedef struct SAddressElement
 {
 	unsigned short address;
-	void* nextEelement;
+	struct SAddressElement* nextEelement;
 }SAddressElement;
 
+struct STagParams;
 typedef struct STagParams
 {
 	char* tagName;
 	unsigned short tagAddr; // Address of the TAG
-	void* nextEelement;
+	struct STagParams* nextEelement;
 }STagParams;
 
+struct SExternElement;
 typedef struct SExternElement
 {
 	char* tagName;
 	SAddressElement* externUseAddrList; // The adddress where the extern is used
-	void* nextEelement;
+	struct SExternElement* nextEelement;
 }SExternElement;
 
+struct SEntryElement;
 typedef struct SEntryElement
 {
 	char* tagName;
 	unsigned short address; //The Entry Tag address
-	void* nextEelement;
+	struct SEntryElement* nextEelement;
 }SEntryElement;
 
 #endif

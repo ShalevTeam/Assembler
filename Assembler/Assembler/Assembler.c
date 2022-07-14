@@ -13,6 +13,14 @@ int main(int argc, char** argv)
 {
     int i;
 
+    initDataBase();
+
+    addExternElemet(0x100, "shay");
+    addExternElemet(0x100, "shay");
+    addExternElemet(0x100, "shay");
+    addExternElemet(0x100, "shay");
+
+    initDataBase();
 
     for (i = 1; i < argc; i++)
     {
