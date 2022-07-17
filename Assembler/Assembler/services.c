@@ -4,16 +4,17 @@ SEntryElement* m_entryList = NULL; // List of all entry and there address
 SExternElement* m_externList = NULL; // List of all extern and there use
 STagParams* m_dataTagList = NULL; // list of all defined TAG in the code
 SCodeElement* m_codeList = NULL; // The code that was generated
-unsigned short DataSeqtion[MAX_ASSEBLER_FILE_SIZE]; // The data seq
-int codePos = 0;
-int dataPos = 0;
+unsigned short* m_pDataSeqtion = NULL; // The data seq
+int m_codePos = 0;
+int m_dataPos = 0;
+int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
 
-int reallocAndCopyBuffer(char** allocatedBuf, int oldSize)
+int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 {
 	int newSize = oldSize * 2;
 
 	// Save the address of the old data
-	char** oldBuf = allocatedBuf;
+	void** oldBuf = allocatedBuf;
 
 	// allocate new buf
 	*allocatedBuf = malloc(newSize);
@@ -60,8 +61,10 @@ char* readLine(char* startPos, char* line)
 	return newStartPos;
 }
 
-void initDataBase()
+EFuncResSucsessFail initDataBase()
 {
+	EFuncResSucsessFail res = EFuncResSucsess;
+
 	while (m_entryList != NULL)
 	{
 		SEntryElement* pNextEntry = m_entryList->nextEelement;
@@ -128,13 +131,50 @@ void initDataBase()
 		m_codeList = pNextEntry;
 	}
 
-	memset(DataSeqtion, 0, sizeof(DataSeqtion));
-	codePos = CODE_INITIAL_ADDR;
-	dataPos = CODE_INITIAL_ADDR;
+	if (m_pDataSeqtion)
+	{
+		free(m_pDataSeqtion);
+	}
+
+	m_pDataSeqtion = malloc (sizeof(unsigned short) *m_maxDataLength);
+
+	if (m_pDataSeqtion == NULL)
+	{
+		res = EFuncResFail;
+	}
+
+	m_codePos = CODE_INITIAL_ADDR;
+	m_dataPos = CODE_INITIAL_ADDR;
+
+	return res;
 }
 
-void addEntryElemet(unsigned short address,char* tagName)
+EFuncResSucsessFail addData(unsigned short val)
 {
+	EFuncResSucsessFail res = EFuncResSucsess;
+
+	if (m_dataPos >= m_maxDataLength)
+	{
+		m_maxDataLength = reallocAndCopyBuffer(&m_pDataSeqtion, m_maxDataLength* sizeof(unsigned short));
+	}
+
+	if (m_maxDataLength == 0)
+	{
+		res = EFuncResFail;
+	}
+	else
+	{
+		m_dataPos++;
+		*m_pDataSeqtion = val;
+	}
+
+	return res;
+}
+
+EFuncResSucsessFail addEntryElemet(unsigned short address,char* tagName)
+{
+	EFuncResSucsessFail res = EFuncResSucsess;
+
 	SEntryElement* latest = m_entryList;
 	SEntryElement* prev = m_entryList;
 
@@ -172,6 +212,7 @@ void addEntryElemet(unsigned short address,char* tagName)
 			else
 			{
 				printf("memory alloc fail\n");
+				res = EFuncResFail;
 			}
 		}
 		else
@@ -182,11 +223,16 @@ void addEntryElemet(unsigned short address,char* tagName)
 	else
 	{
 		printf("memory alloc fail\n");
+		res = EFuncResFail;
 	}
+
+	return res;
 }
 
-void addDataTagElemet(unsigned short address, char* tagName)
+EFuncResSucsessFail addDataTagElemet(unsigned short address, char* tagName)
 {
+	EFuncResSucsessFail res = EFuncResSucsess;
+
 	STagParams* latest = m_dataTagList;
 	STagParams* prev = m_dataTagList;
 
@@ -224,6 +270,7 @@ void addDataTagElemet(unsigned short address, char* tagName)
 			else
 			{
 				printf("memory alloc fail\n");
+				res = EFuncResFail;
 			}
 		}
 		else
@@ -234,11 +281,15 @@ void addDataTagElemet(unsigned short address, char* tagName)
 	else
 	{
 		printf("memory alloc fail\n");
+		res = EFuncResFail;
 	}
+
+	return res;
 }
 
-void addCodeElemet(SCodeinfo codeInfo)
+EFuncResSucsessFail addCodeElemet(SCodeinfo codeInfo)
 {
+	EFuncResSucsessFail res = EFuncResSucsess;
 	SCodeElement* latest = m_codeList;
 	SCodeElement* prev = m_codeList;
 
@@ -272,21 +323,27 @@ void addCodeElemet(SCodeinfo codeInfo)
 			{
 				strcpy(newElem->codeInfo.tag, codeInfo.tag);
 				newElem->nextEelement = NULL;
+				m_codePos++;
 			}
 			else
 			{
 				printf("memory alloc fail\n");
+				res = EFuncResFail;
 			}
 		}
 	}
 	else
 	{
 		printf("memory alloc fail\n");
+		res = EFuncResFail;
 	}
+
+	return res;
 }
 
-void addExternElemet(unsigned short address, char* tagName)
+EFuncResSucsessFail addExternElemet(unsigned short address, char* tagName)
 {
+	EFuncResSucsessFail res = EFuncResSucsess;
 	SExternElement* latest = m_externList;
 	SExternElement* prev = m_externList;
 	EFuncResSucsessFail tagFound = EFuncResFail;
@@ -311,7 +368,8 @@ void addExternElemet(unsigned short address, char* tagName)
 			if (addrprev == NULL)
 			{
 				printf("unexpected null pointer\n");
-				return;
+				res = EFuncResFail;
+				return res;
 			}
 
 			// Set the new element
@@ -321,12 +379,13 @@ void addExternElemet(unsigned short address, char* tagName)
 			{
 				((SAddressElement*)addrprev->nextEelement)->address = address;
 				((SAddressElement*)addrprev->nextEelement)->nextEelement = NULL;
-				return;
+				return res;
 			}
 			else
 			{
 				printf("memory alloc fail\n");
-				return;
+				res = EFuncResFail;
+				return res;
 			}
 			
 		}
@@ -358,6 +417,8 @@ void addExternElemet(unsigned short address, char* tagName)
 		else
 		{
 			printf("memory alloc fail\n");
+			res = EFuncResFail;
+			return res;
 		}
 
 		newElem->externUseAddrList = malloc(sizeof(SAddressElement));
@@ -370,10 +431,15 @@ void addExternElemet(unsigned short address, char* tagName)
 		else
 		{
 			printf("memory alloc fail\n");
+			res = EFuncResFail;
+			return res;
 		}
 	}
 	else
 	{
 		printf("memory alloc fail\n");
+		res = EFuncResFail;
 	}
+
+	return res;
 }
