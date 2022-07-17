@@ -28,13 +28,18 @@ typedef enum ECodeStatus
 	EWaitForTag = 1
 }ECodeStatus;
 
-struct SCodeElement;
-typedef struct SCodeElement
+typedef struct SCodeinfo
 {
 	unsigned short address;
 	unsigned short binaryCode;
-	char* tagName;
 	ECodeStatus Status;
+	char* tag; // Tag which need to be translate to code
+}SCodeinfo;
+
+struct SCodeElement;
+typedef struct SCodeElement
+{
+	SCodeinfo codeInfo;
 	struct SCodeElement* nextEelement;
 }SCodeElement;
 

@@ -65,8 +65,11 @@ void initDataBase()
 	while (m_entryList != NULL)
 	{
 		SEntryElement* pNextEntry = m_entryList->nextEelement;
-
-		free(m_entryList->tagName);
+		if (m_entryList->tagName)
+		{
+			free(m_entryList->tagName);
+			m_entryList->tagName = NULL;
+		}
 		free(m_entryList);
 
 		m_entryList = pNextEntry;
@@ -85,7 +88,12 @@ void initDataBase()
 			m_externList->externUseAddrList = pInternalNextEntry;
 		}
 
-		free(m_externList->tagName);
+		if (m_externList->tagName)
+		{
+			free(m_externList->tagName);
+			m_externList->tagName = NULL;
+		}
+
 		free(m_externList);
 
 		m_externList = pNextEntry;
@@ -95,7 +103,11 @@ void initDataBase()
 	{
 		STagParams* pNextEntry = m_dataTagList->nextEelement;
 
-		free(m_dataTagList->tagName);
+		if (m_dataTagList->tagName)
+		{
+			free(m_dataTagList->tagName);
+			m_dataTagList->tagName = NULL;
+		}
 		free(m_dataTagList);
 
 		m_dataTagList = pNextEntry;
@@ -105,7 +117,12 @@ void initDataBase()
 	{
 		SCodeElement* pNextEntry = m_codeList->nextEelement;
 
-		free(m_codeList->tagName);
+		if (m_codeList->codeInfo.tag)
+		{
+			free(m_codeList->codeInfo.tag);
+			m_codeList->codeInfo.tag = NULL;
+		}
+
 		free(m_codeList);
 
 		m_codeList = pNextEntry;
@@ -143,15 +160,123 @@ void addEntryElemet(unsigned short address,char* tagName)
 		}
 
 		newElem->address = address;
-		newElem->tagName = malloc(strlen(tagName) + 1);
-		if (newElem->tagName)
+
+		if (tagName)
 		{
-			strcpy(newElem->tagName, tagName);
-			newElem->nextEelement = NULL;
+			newElem->tagName = malloc(strlen(tagName) + 1);
+			if (newElem->tagName)
+			{
+				strcpy(newElem->tagName, tagName);
+				newElem->nextEelement = NULL;
+			}
+			else
+			{
+				printf("memory alloc fail\n");
+			}
 		}
 		else
 		{
-			printf("memory alloc fail\n");
+			newElem->tagName = NULL;
+		}
+	}
+	else
+	{
+		printf("memory alloc fail\n");
+	}
+}
+
+void addDataTagElemet(unsigned short address, char* tagName)
+{
+	STagParams* latest = m_dataTagList;
+	STagParams* prev = m_dataTagList;
+
+	// Find the latest element
+	while (latest != NULL)
+	{
+		prev = latest;
+		latest = latest->nextEelement;
+	}
+
+	STagParams* newElem = malloc(sizeof(STagParams));
+
+	if (m_entryList == NULL)
+	{
+		m_dataTagList = newElem;
+	}
+
+	if (newElem)
+	{
+		if (prev != NULL)
+		{
+			prev->nextEelement = newElem;
+		}
+
+		newElem->tagAddr = address;
+
+		if (tagName)
+		{
+			newElem->tagName = malloc(strlen(tagName) + 1);
+			if (newElem->tagName)
+			{
+				strcpy(newElem->tagName, tagName);
+				newElem->nextEelement = NULL;
+			}
+			else
+			{
+				printf("memory alloc fail\n");
+			}
+		}
+		else
+		{
+			newElem->tagName = NULL;
+		}
+	}
+	else
+	{
+		printf("memory alloc fail\n");
+	}
+}
+
+void addCodeElemet(SCodeinfo codeInfo)
+{
+	SCodeElement* latest = m_codeList;
+	SCodeElement* prev = m_codeList;
+
+	// Find the latest element
+	while (latest != NULL)
+	{
+		prev = latest;
+		latest = latest->nextEelement;
+	}
+
+	SCodeElement* newElem = malloc(sizeof(SCodeElement));
+
+	if (m_entryList == NULL)
+	{
+		m_codeList = newElem;
+	}
+
+	if (newElem)
+	{
+		if (prev != NULL)
+		{
+			prev->nextEelement = newElem;
+		}
+
+		newElem->codeInfo = codeInfo;
+
+		if (codeInfo.tag)
+		{
+			newElem->codeInfo.tag = malloc(strlen(codeInfo.tag) + 1);
+			if (newElem->codeInfo.tag)
+			{
+				strcpy(newElem->codeInfo.tag, codeInfo.tag);
+				newElem->nextEelement = NULL;
+			}
+			else
+			{
+				printf("memory alloc fail\n");
+			}
 		}
 	}
 	else

@@ -9,6 +9,8 @@ char* readLine(char* startPos,char* line);
 void initDataBase();
 void addEntryElemet(unsigned short address, char* tagName);
 void addExternElemet(unsigned short address, char* tagName);
+void addDataTagElemet(unsigned short address, char* tagName);
+void addCodeElemet(SCodeinfo codeInfo);
 
 
 #endif
