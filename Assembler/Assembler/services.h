@@ -6,12 +6,14 @@
 
 int reallocAndCopyBuffer(void** outFileData, int currSize);
 char* readLine(char* startPos,char* line);
-EFuncResSucsessFail initDataBase();
-EFuncResSucsessFail addData(unsigned short val);
-EFuncResSucsessFail addEntryElemet(unsigned short address, char* tagName);
-EFuncResSucsessFail addExternElemet(unsigned short address, char* tagName);
-EFuncResSucsessFail addDataTagElemet(unsigned short address, char* tagName);
-EFuncResSucsessFail addCodeElemet(SCodeinfo codeInfo);
+eSucsessFail initDataBase();
+eSucsessFail addData(unsigned short val);
+eSucsessFail addEntryElemet(unsigned short address, char* tagName);
+eSucsessFail addExternElemet(unsigned short address, char* tagName);
+eSucsessFail addDataTagElemet(unsigned short address, char* tagName);
+eSucsessFail addCodeElemet(SCodeinfo codeInfo);
+
+ELineType getLineType(int lineNumber, char* line);
 
 
 #endif

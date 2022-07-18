@@ -61,9 +61,9 @@ char* readLine(char* startPos, char* line)
 	return newStartPos;
 }
 
-EFuncResSucsessFail initDataBase()
+eSucsessFail initDataBase()
 {
-	EFuncResSucsessFail res = EFuncResSucsess;
+	eSucsessFail res = eSucsess;
 
 	while (m_entryList != NULL)
 	{
@@ -140,18 +140,18 @@ EFuncResSucsessFail initDataBase()
 
 	if (m_pDataSeqtion == NULL)
 	{
-		res = EFuncResFail;
+		res = eFail;
 	}
 
-	m_codePos = CODE_INITIAL_ADDR;
-	m_dataPos = CODE_INITIAL_ADDR;
+	m_codePos = 0;
+	m_dataPos = 0;
 
 	return res;
 }
 
-EFuncResSucsessFail addData(unsigned short val)
+eSucsessFail addData(unsigned short val)
 {
-	EFuncResSucsessFail res = EFuncResSucsess;
+	eSucsessFail res = eSucsess;
 
 	if (m_dataPos >= m_maxDataLength)
 	{
@@ -160,7 +160,7 @@ EFuncResSucsessFail addData(unsigned short val)
 
 	if (m_maxDataLength == 0)
 	{
-		res = EFuncResFail;
+		res = eFail;
 	}
 	else
 	{
@@ -171,9 +171,9 @@ EFuncResSucsessFail addData(unsigned short val)
 	return res;
 }
 
-EFuncResSucsessFail addEntryElemet(unsigned short address,char* tagName)
+eSucsessFail addEntryElemet(unsigned short address,char* tagName)
 {
-	EFuncResSucsessFail res = EFuncResSucsess;
+	eSucsessFail res = eSucsess;
 
 	SEntryElement* latest = m_entryList;
 	SEntryElement* prev = m_entryList;
@@ -212,7 +212,7 @@ EFuncResSucsessFail addEntryElemet(unsigned short address,char* tagName)
 			else
 			{
 				printf("memory alloc fail\n");
-				res = EFuncResFail;
+				res = eFail;
 			}
 		}
 		else
@@ -223,15 +223,15 @@ EFuncResSucsessFail addEntryElemet(unsigned short address,char* tagName)
 	else
 	{
 		printf("memory alloc fail\n");
-		res = EFuncResFail;
+		res = eFail;
 	}
 
 	return res;
 }
 
-EFuncResSucsessFail addDataTagElemet(unsigned short address, char* tagName)
+eSucsessFail addDataTagElemet(unsigned short address, char* tagName)
 {
-	EFuncResSucsessFail res = EFuncResSucsess;
+	eSucsessFail res = eSucsess;
 
 	STagParams* latest = m_dataTagList;
 	STagParams* prev = m_dataTagList;
@@ -270,7 +270,7 @@ EFuncResSucsessFail addDataTagElemet(unsigned short address, char* tagName)
 			else
 			{
 				printf("memory alloc fail\n");
-				res = EFuncResFail;
+				res = eFail;
 			}
 		}
 		else
@@ -281,15 +281,15 @@ EFuncResSucsessFail addDataTagElemet(unsigned short address, char* tagName)
 	else
 	{
 		printf("memory alloc fail\n");
-		res = EFuncResFail;
+		res = eFail;
 	}
 
 	return res;
 }
 
-EFuncResSucsessFail addCodeElemet(SCodeinfo codeInfo)
+eSucsessFail addCodeElemet(SCodeinfo codeInfo)
 {
-	EFuncResSucsessFail res = EFuncResSucsess;
+	eSucsessFail res = eSucsess;
 	SCodeElement* latest = m_codeList;
 	SCodeElement* prev = m_codeList;
 
@@ -328,25 +328,25 @@ EFuncResSucsessFail addCodeElemet(SCodeinfo codeInfo)
 			else
 			{
 				printf("memory alloc fail\n");
-				res = EFuncResFail;
+				res = eFail;
 			}
 		}
 	}
 	else
 	{
 		printf("memory alloc fail\n");
-		res = EFuncResFail;
+		res = eFail;
 	}
 
 	return res;
 }
 
-EFuncResSucsessFail addExternElemet(unsigned short address, char* tagName)
+eSucsessFail addExternElemet(unsigned short address, char* tagName)
 {
-	EFuncResSucsessFail res = EFuncResSucsess;
+	eSucsessFail res = eSucsess;
 	SExternElement* latest = m_externList;
 	SExternElement* prev = m_externList;
-	EFuncResSucsessFail tagFound = EFuncResFail;
+	eSucsessFail tagFound = eFail;
 
 	// Check if the tag exist
 	while (latest != NULL)
@@ -354,7 +354,7 @@ EFuncResSucsessFail addExternElemet(unsigned short address, char* tagName)
 		if (strcmp(latest->tagName, tagName) == 0)
 		{
 			// Tag found
-			tagFound = EFuncResSucsess;
+			tagFound = eSucsess;
 			
 			// Find the latest at the use list
 			SAddressElement* addrcurr = latest->externUseAddrList;
@@ -368,7 +368,7 @@ EFuncResSucsessFail addExternElemet(unsigned short address, char* tagName)
 			if (addrprev == NULL)
 			{
 				printf("unexpected null pointer\n");
-				res = EFuncResFail;
+				res = eFail;
 				return res;
 			}
 
@@ -384,7 +384,7 @@ EFuncResSucsessFail addExternElemet(unsigned short address, char* tagName)
 			else
 			{
 				printf("memory alloc fail\n");
-				res = EFuncResFail;
+				res = eFail;
 				return res;
 			}
 			
@@ -417,7 +417,7 @@ EFuncResSucsessFail addExternElemet(unsigned short address, char* tagName)
 		else
 		{
 			printf("memory alloc fail\n");
-			res = EFuncResFail;
+			res = eFail;
 			return res;
 		}
 
@@ -431,15 +431,23 @@ EFuncResSucsessFail addExternElemet(unsigned short address, char* tagName)
 		else
 		{
 			printf("memory alloc fail\n");
-			res = EFuncResFail;
+			res = eFail;
 			return res;
 		}
 	}
 	else
 	{
 		printf("memory alloc fail\n");
-		res = EFuncResFail;
+		res = eFail;
 	}
 
 	return res;
+}
+
+ELineType getLineType(int lineNumber, char* line)
+{
+	ELineType lineType = eLineUndefine;
+
+
+	return lineType;
 }

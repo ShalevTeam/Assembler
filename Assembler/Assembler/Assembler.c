@@ -7,7 +7,7 @@
 void processFile(char* fileName);
 void freeCodeList(SCodeElement* elemToFree);
 void analizeLineOfCode(int lineNumber,char* line);
-EFuncResSucsessFail doFirstFileScan(char* fileData);
+eSucsessFail doFirstFileScan(char* fileData);
 
 int main(int argc, char** argv)
 {
@@ -110,9 +110,9 @@ void processFile(char* fileName)
     }
 }
 
-EFuncResSucsessFail doFirstFileScan(char* fileData)
+eSucsessFail doFirstFileScan(char* fileData)
 {
-    EFuncResSucsessFail scanStatus = EFuncResSucsess;
+    eSucsessFail scanStatus = eSucsess;
     char line[MAX_LINE_LENGTH];
     int lineLength = 0;
 
@@ -156,7 +156,7 @@ void freeCodeList(SCodeElement* elemToFree)
 void analizeLineOfCode(int lineNumber, char* line)
 {
     // First we chek the line type
-   // ELineType lineType = getLineType(lineNumber, line);
+   ELineType lineType = getLineType(lineNumber, line);
 
     //if (lineType == ECodeLine)
     {

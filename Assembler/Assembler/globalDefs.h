@@ -10,22 +10,24 @@
 #define CODE_INITIAL_ADDR 100
 
 
-typedef enum EFuncResSucsessFail
+typedef enum eSucsessFail
 {
-	EFuncResFail = 0,
-	EFuncResSucsess = 1
-}EFuncResSucsessFail;
+	eFail = 0,
+	eSucsess = 1
+}eSucsessFail;
 
 typedef enum ELineType
 {
-	ECodeLine = 0,
-	EInstructionLine = 1
+	eLineUndefine = 0,
+	eCodeLine ,
+	eDataLine,
+	eInstructionLine
 }ELineType;
 
 typedef enum ECodeStatus
 {
-	ECodeComplete = 0,
-	EWaitForTag = 1
+	eCodeComplete = 0,
+	eWaitForTag = 1
 }ECodeStatus;
 
 typedef struct SCodeinfo

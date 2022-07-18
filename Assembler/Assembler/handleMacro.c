@@ -7,9 +7,9 @@
 static int m_maxAllocForOutput = MAX_ASSEBLER_FILE_SIZE * FILE_SIZE_FACTOR;
 int m_outputlength = 0; //length of output file
 
-EFuncResSucsessFail handleMacros(char* inFileData, char** outFileData)
+eSucsessFail handleMacros(char* inFileData, char** outFileData)
 {
-	EFuncResSucsessFail parsOk = EFuncResSucsess;
+	eSucsessFail parsOk = eSucsess;
 
 	*outFileData = malloc(m_maxAllocForOutput);
 
@@ -26,14 +26,14 @@ EFuncResSucsessFail handleMacros(char* inFileData, char** outFileData)
 			if (m_maxAllocForOutput == 0)
 			{
 				printf("ReAllocation output failed\n");
-				parsOk = EFuncResFail;
+				parsOk = eFail;
 			}
 		}
 	}
 	else
 	{
 		printf("Allocation failed\n");
-		parsOk = EFuncResFail;
+		parsOk = eFail;
 	}
 
 	return parsOk;
