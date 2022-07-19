@@ -13,7 +13,7 @@ eSucsessFail addExternElemet(unsigned short address, char* tagName);
 eSucsessFail addDataTagElemet(unsigned short address, char* tagName);
 eSucsessFail addCodeElemet(SCodeinfo codeInfo);
 
-ELineType getLineType(int lineNumber, char* line);
+ELineType getLineType(int lineNumber, char const* line, int* additionalInfo);
 
 
 #endif

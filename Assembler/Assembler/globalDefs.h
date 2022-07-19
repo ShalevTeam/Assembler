@@ -21,8 +21,46 @@ typedef enum ELineType
 	eLineUndefine = 0,
 	eCodeLine ,
 	eDataLine,
-	eInstructionLine
+	eInstructionLine,
+	eRemarkLine
 }ELineType;
+
+typedef enum EDataCmnd
+{
+	eNoDataCmnd = 0,
+	eStringCmnd,
+	eStructCmnd,
+	eDataCmnd
+}EDataCmnd;
+
+typedef enum ECodeCmnd
+{
+	eNoCodeCmnd = 0,
+	emovCodeCmnd,
+	ecmpCodeCmnd,
+	eaddCodeCmnd,
+	esubCodeCmnd,
+	enotCodeCmnd,
+	eclrCodeCmnd,
+	eleaCodeCmnd,
+	eincCodeCmnd,
+	edecCodeCmnd,
+	ejmpCodeCmnd,
+	ebneCodeCmnd,
+	egetCodeCmnd,
+	eprnCodeCmnd,
+	ejsrCodeCmnd,
+	ertsCodeCmnd,
+	ehltCodeCmnd,
+	eMaxCodeCmnd
+}ECodeCmnd;
+
+typedef enum EInstructionCmnd
+{
+	eNoInstructionCmnd = 0,
+	eExternInstruction,
+	eEntryInstruction
+}EInstructionCmnd;
 
 typedef enum ECodeStatus
 {

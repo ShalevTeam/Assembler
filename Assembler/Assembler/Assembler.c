@@ -155,8 +155,10 @@ void freeCodeList(SCodeElement* elemToFree)
 
 void analizeLineOfCode(int lineNumber, char* line)
 {
+    int additionalInfo = 0;
+
     // First we chek the line type
-   ELineType lineType = getLineType(lineNumber, line);
+   ELineType lineType = getLineType(lineNumber, line, &additionalInfo);
 
     //if (lineType == ECodeLine)
     {

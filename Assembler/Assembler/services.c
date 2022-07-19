@@ -9,6 +9,13 @@ int m_codePos = 0;
 int m_dataPos = 0;
 int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
 
+// Private functions
+static int isBlank(char const* line);
+static EInstructionCmnd getInstructionType(char const* line);
+static EDataCmnd getdataCmnd(char const* line);
+static ECodeCmnd getCodeCommand(char const* line);
+
+
 int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 {
 	int newSize = oldSize * 2;
@@ -444,10 +451,116 @@ eSucsessFail addExternElemet(unsigned short address, char* tagName)
 	return res;
 }
 
-ELineType getLineType(int lineNumber, char* line)
+ELineType getLineType(int lineNumber, char const* line, int* additionalInfo)
 {
 	ELineType lineType = eLineUndefine;
+	
+	if (strstr(line, ";") != NULL)
+	{
+		lineType = eRemarkLine;
+	}
+	else
+	{
+		EDataCmnd dataCmnd = getdataCmnd(line);
 
+		if (dataCmnd != eNoDataCmnd)
+		{
+			lineType = eDataLine;
+			*additionalInfo = (int)dataCmnd;
+		}
+		else 
+		{
+			EInstructionCmnd instructionType = getInstructionType(line);
+
+			if (instructionType != eNoInstructionCmnd)
+			{
+				lineType = eInstructionLine;
+				*additionalInfo = (int)instructionType;
+			}
+			else
+			{
+				ECodeCmnd codeCmnd = getCodeCommand(line);
+
+				if (codeCmnd != eNoCodeCmnd)
+				{
+					lineType = eCodeLine;
+					*additionalInfo = (int)codeCmnd;
+				}
+				else
+				{
+					// Check if line is just spaces
+					if (!isBlank(line))
+					{
+						printf("Syntact err on line %d: %s\n", lineNumber, line);
+					}
+				}
+			}
+		
+		}
+	}
 
 	return lineType;
+}
+
+
+static int isBlank(char const* line)
+{
+	char const* ch;
+	int is_blank = 1;
+
+	// Iterate through each character.
+	for (ch = line; *ch != '\0'; ++ch)
+	{
+		if (*ch != ' ')
+		{
+			// Found a non-whitespace character.
+			is_blank = 0;
+			break;
+		}
+	}
+
+	return is_blank;
+}
+
+static EInstructionCmnd getInstructionType(char const* line)
+{
+	EInstructionCmnd cmnd = eNoInstructionCmnd;
+
+	if (strstr(line, ".extern") != NULL)
+	{
+		cmnd = eExternInstruction;
+	}
+	else if (strstr(line, ".entry") != NULL)
+	{
+		cmnd = eEntryInstruction;
+	}
+	
+	return cmnd;
+}
+
+static EDataCmnd getdataCmnd(char const* line)
+{
+	EDataCmnd dataCmnd = eNoDataCmnd;
+
+	if (strstr(line, ".string") != NULL)
+	{
+		dataCmnd = eStringCmnd;
+	}
+	else if (strstr(line, ".data") != NULL)
+	{
+		dataCmnd = eDataCmnd;
+	}
+	else if (strstr(line, ".struct") != NULL)
+	{
+		dataCmnd = eStructCmnd;
+	}
+
+	return dataCmnd;
+}
+
+static ECodeCmnd getCodeCommand(char const* line)
+{
+	ECodeCmnd cmnd = eNoCodeCmnd;
+
+	return cmnd;
 }
