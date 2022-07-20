@@ -52,7 +52,7 @@ char* readLine(char* startPos, char* line)
 		return NULL;
 	}
 
-	int sizeToCopy = 1 + endpos - startPos;
+	int sizeToCopy = (int)(1 + endpos - startPos);
 
 	if (sizeToCopy + 1 < MAX_LINE_LENGTH)
 	{
