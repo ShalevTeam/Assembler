@@ -6,7 +6,7 @@
 // function declerations
 void processFile(char* fileName);
 void freeCodeList(SCodeElement* elemToFree);
-void analizeLineOfCode(int lineNumber,char* line);
+void analizeLine(int lineNumber,char* line);
 eSucsessFail doFirstFileScan(char* fileData);
 
 int main(int argc, char** argv)
@@ -130,7 +130,7 @@ eSucsessFail doFirstFileScan(char* fileData)
         {
             printf("Handle line: %s", line);
 
-            analizeLineOfCode(lineNumber,line);
+            analizeLine(lineNumber,line);
         }
         else
         {
@@ -153,14 +153,14 @@ void freeCodeList(SCodeElement* elemToFree)
     }
 }
 
-void analizeLineOfCode(int lineNumber, char* line)
+void analizeLine(int lineNumber, char* line)
 {
     int additionalInfo = 0;
 
     // First we chek the line type
    ELineType lineType = getLineType(lineNumber, line, &additionalInfo);
 
-    //if (lineType == ECodeLine)
+    if (lineType == eCodeLine)
     {
         //handleCodeLine(lineNumber, line);
     }
