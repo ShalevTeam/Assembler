@@ -14,7 +14,7 @@ static int isBlank(char const* line);
 static EInstructionCmnd getInstructionType(char const* line);
 static EDataCmnd getdataCmnd(char const* line);
 static ECodeCmnd getCodeCommand(char const* line);
-
+static int isWordExistInLine(char const* line, char const* word);
 
 int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 {
@@ -455,7 +455,7 @@ ELineType getLineType(int lineNumber, char const* line, int* additionalInfo)
 {
 	ELineType lineType = eLineUndefine;
 	
-	if (strstr(line, ";") != NULL)
+	if (isWordExistInLine(line, ";"))
 	{
 		lineType = eRemarkLine;
 	}
@@ -526,11 +526,11 @@ static EInstructionCmnd getInstructionType(char const* line)
 {
 	EInstructionCmnd cmnd = eNoInstructionCmnd;
 
-	if (strstr(line, ".extern") != NULL)
+	if (isWordExistInLine(line, ".extern"))
 	{
 		cmnd = eExternInstruction;
 	}
-	else if (strstr(line, ".entry") != NULL)
+	else if (isWordExistInLine(line, ".entry"))
 	{
 		cmnd = eEntryInstruction;
 	}
@@ -542,15 +542,15 @@ static EDataCmnd getdataCmnd(char const* line)
 {
 	EDataCmnd dataCmnd = eNoDataCmnd;
 
-	if (strstr(line, ".string") != NULL)
+	if (isWordExistInLine(line, ".string"))
 	{
 		dataCmnd = eStringCmnd;
 	}
-	else if (strstr(line, ".data") != NULL)
+	else if (isWordExistInLine(line, ".data"))
 	{
 		dataCmnd = eDataCmnd;
 	}
-	else if (strstr(line, ".struct") != NULL)
+	else if (isWordExistInLine(line, ".struct"))
 	{
 		dataCmnd = eStructCmnd;
 	}
@@ -562,5 +562,43 @@ static ECodeCmnd getCodeCommand(char const* line)
 {
 	ECodeCmnd cmnd = eNoCodeCmnd;
 
+	if (isWordExistInLine(line, "mov"))
+	{
+		cmnd = emovCodeCmnd;
+	}
+
 	return cmnd;
+}
+
+static int isWordExistInLine(char const* line, char const* word)
+{
+	int wordExist = 0;
+	char* pos;
+
+	pos = strstr(line, word);
+
+	if (pos != NULL)
+	{
+		// Check from the left side to see if its a complet word
+		if (pos != line)
+		{
+			if (*(pos - 1) != ' ')
+			{
+				wordExist = 0;
+				return wordExist;
+			}
+		}
+
+		// Check from the right side to see if its a complet word
+		char* endPos = (pos + strlen(word));
+
+		if( (*endPos == ' ') ||
+			(*endPos == '\n') ||
+			(*endPos == 0))
+		{
+			wordExist = 1;
+		}
+	}
+
+	return wordExist;
 }
