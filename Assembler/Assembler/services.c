@@ -566,6 +566,66 @@ static ECodeCmnd getCodeCommand(char const* line)
 	{
 		cmnd = emovCodeCmnd;
 	}
+	else if (isWordExistInLine(line, "cmp"))
+	{
+		cmnd = ecmpCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "add"))
+	{
+		cmnd = eaddCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "sub"))
+	{
+		cmnd = esubCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "not"))
+	{
+		cmnd = enotCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "clr"))
+	{
+		cmnd = eclrCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "lea"))
+	{
+		cmnd = eleaCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "inc"))
+	{
+		cmnd = eincCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "dec"))
+	{
+		cmnd = edecCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "jmp"))
+	{
+		cmnd = ejmpCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "bne"))
+	{
+		cmnd = ebneCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "get"))
+	{
+		cmnd = egetCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "prn"))
+	{
+		cmnd = eprnCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "jsr"))
+	{
+		cmnd = ejsrCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "rts"))
+	{
+		cmnd = ertsCodeCmnd;
+	}
+	else if (isWordExistInLine(line, "hlt"))
+	{
+		cmnd = ehltCodeCmnd;
+	}
 
 	return cmnd;
 }
