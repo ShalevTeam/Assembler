@@ -11,20 +11,12 @@ eSucsessFail doFirstFileScan(char* fileData);
 
 int main(int argc, char** argv)
 {
-    int i;
-
-    initDataBase();
-
-    addExternElemet(0x100, "shay");
-    addExternElemet(0x100, "shay");
-    addExternElemet(0x100, "shay");
-    addExternElemet(0x100, "shay");
-
-    initDataBase();
+    int i;    
 
     for (i = 1; i < argc; i++)
     {
         char* fullFileName = NULL;
+        
 
         if ((fullFileName = malloc(strlen(argv[i]) + strlen(".as") + 1)) != NULL)
         {
@@ -56,6 +48,7 @@ void processFile(char* fileName)
 
     if (file)
     {
+        // Get file size
         int fileSize = 0;
         char* postProccesData = NULL;
 
@@ -76,6 +69,7 @@ void processFile(char* fileName)
             // read all file data to struct SCodeElement
             fread(rawCodeData, fileSize+1, 1, file);
 
+            // Init all data structure
             initDataBase();
 
             if (handleMacros(rawCodeData, &postProccesData))
@@ -84,7 +78,7 @@ void processFile(char* fileName)
 
                 if (doFirstFileScan(postProccesData))
                 {
-                    printf("done first file scan for %s\n", fileName);   
+                    printf("done first file scan for %s\n", fileName); 
                 }
                 else
                 {
@@ -157,11 +151,14 @@ void analizeLine(int lineNumber, char* line)
 {
     int additionalInfo = 0;
 
+    setCurrentLineNumber(lineNumber);
+
     // First we chek the line type
    ELineType lineType = getLineType(lineNumber, line, &additionalInfo);
 
     if (lineType == eCodeLine)
     {
+        handleTag(line,lineType);
         //handleCodeLine(lineNumber, line);
     }
     //else

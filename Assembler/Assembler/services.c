@@ -5,9 +5,12 @@ SExternElement* m_externList = NULL; // List of all extern and there use
 STagParams* m_dataTagList = NULL; // list of all defined TAG in the code
 SCodeElement* m_codeList = NULL; // The code that was generated
 unsigned short* m_pDataSeqtion = NULL; // The data seq
-int m_codePos = 0;
-int m_dataPos = 0;
-int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
+
+// Private members
+static int m_lineNumber = 0;
+static int m_codePos = CODE_INITIAL_ADDR;
+static int m_dataPos = CODE_INITIAL_ADDR;
+static int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
 
 // Private functions
 static int isBlank(char const* line);
@@ -34,7 +37,7 @@ int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 	}
 	else
 	{
-		printf("Allocation failed\n");
+		printf("Err on line %d Allocation failed\n", m_lineNumber);
 		newSize = 0;
 	}
 
@@ -62,10 +65,15 @@ char* readLine(char* startPos, char* line)
 	}
 	else
 	{
-		printf("invalid line length\n");
+		printf("Err on line %d invalid line length\n",m_lineNumber);
 	}
 
 	return newStartPos;
+}
+
+void setCurrentLineNumber(lineNumber)
+{
+	m_lineNumber = lineNumber;
 }
 
 eSucsessFail initDataBase()
@@ -150,8 +158,8 @@ eSucsessFail initDataBase()
 		res = eFail;
 	}
 
-	m_codePos = 0;
-	m_dataPos = 0;
+	m_codePos = CODE_INITIAL_ADDR;
+	m_dataPos = CODE_INITIAL_ADDR;
 
 	return res;
 }
@@ -218,7 +226,7 @@ eSucsessFail addEntryElemet(unsigned short address,char* tagName)
 			}
 			else
 			{
-				printf("memory alloc fail\n");
+				printf("Err on line %d memory alloc fail\n",m_lineNumber);
 				res = eFail;
 			}
 		}
@@ -229,30 +237,42 @@ eSucsessFail addEntryElemet(unsigned short address,char* tagName)
 	}
 	else
 	{
-		printf("memory alloc fail\n");
+		printf("Err on line %d memory alloc fail\n",m_lineNumber);
 		res = eFail;
 	}
 
 	return res;
 }
 
-eSucsessFail addDataTagElemet(unsigned short address, char* tagName)
+eSucsessFail addDataTagElemet(unsigned short address, char* tagName,int tagLength)
 {
 	eSucsessFail res = eSucsess;
 
 	STagParams* latest = m_dataTagList;
 	STagParams* prev = m_dataTagList;
 
-	// Find the latest element
-	while (latest != NULL)
+	// Validate tag
+	if (*tagName == ' ')
 	{
+		printf("Err on line %d Tag containe spaces\n", m_lineNumber);
+	}
+
+	// Find the latest element
+	while (latest != NULL) 
+	{
+		if (strncmp(latest->tagName, tagName, tagLength) == 0)
+		{
+			printf("Err on line %d Tag define twice: %s",m_lineNumber, tagName);
+
+			return eFail;
+		}
 		prev = latest;
 		latest = latest->nextEelement;
 	}
 
 	STagParams* newElem = malloc(sizeof(STagParams));
 
-	if (m_entryList == NULL)
+	if (m_dataTagList == NULL)
 	{
 		m_dataTagList = newElem;
 	}
@@ -268,15 +288,16 @@ eSucsessFail addDataTagElemet(unsigned short address, char* tagName)
 
 		if (tagName)
 		{
-			newElem->tagName = malloc(strlen(tagName) + 1);
+			newElem->tagName = malloc(tagLength + 1);
 			if (newElem->tagName)
 			{
-				strcpy(newElem->tagName, tagName);
+				strncpy(newElem->tagName, tagName, tagLength);
+				newElem->tagName[tagLength] = 0;
 				newElem->nextEelement = NULL;
 			}
 			else
 			{
-				printf("memory alloc fail\n");
+				printf("Err on line %d memory alloc fail\n",m_lineNumber);
 				res = eFail;
 			}
 		}
@@ -287,7 +308,7 @@ eSucsessFail addDataTagElemet(unsigned short address, char* tagName)
 	}
 	else
 	{
-		printf("memory alloc fail\n");
+		printf("Err on line %d memory alloc fail\n",m_lineNumber);
 		res = eFail;
 	}
 
@@ -334,14 +355,14 @@ eSucsessFail addCodeElemet(SCodeinfo codeInfo)
 			}
 			else
 			{
-				printf("memory alloc fail\n");
+				printf("Err on line %d memory alloc fail\n",m_lineNumber);
 				res = eFail;
 			}
 		}
 	}
 	else
 	{
-		printf("memory alloc fail\n");
+		printf("Err on line %d memory alloc fail\n",m_lineNumber);
 		res = eFail;
 	}
 
@@ -374,7 +395,7 @@ eSucsessFail addExternElemet(unsigned short address, char* tagName)
 
 			if (addrprev == NULL)
 			{
-				printf("unexpected null pointer\n");
+				printf("Err on line %d unexpected null pointer\n",m_lineNumber);
 				res = eFail;
 				return res;
 			}
@@ -390,7 +411,7 @@ eSucsessFail addExternElemet(unsigned short address, char* tagName)
 			}
 			else
 			{
-				printf("memory alloc fail\n");
+				printf("Err on line %d memory alloc fail\n",m_lineNumber);
 				res = eFail;
 				return res;
 			}
@@ -423,7 +444,7 @@ eSucsessFail addExternElemet(unsigned short address, char* tagName)
 		}
 		else
 		{
-			printf("memory alloc fail\n");
+			printf("Err on line %d memory alloc fail\n",m_lineNumber);
 			res = eFail;
 			return res;
 		}
@@ -437,14 +458,14 @@ eSucsessFail addExternElemet(unsigned short address, char* tagName)
 		}
 		else
 		{
-			printf("memory alloc fail\n");
+			printf("Err on line %d memory alloc fail\n",m_lineNumber);
 			res = eFail;
 			return res;
 		}
 	}
 	else
 	{
-		printf("memory alloc fail\n");
+		printf("Err on line %d memory alloc fail\n",m_lineNumber);
 		res = eFail;
 	}
 
@@ -491,7 +512,7 @@ ELineType getLineType(int lineNumber, char const* line, int* additionalInfo)
 					// Check if line is just spaces
 					if (!isBlank(line))
 					{
-						printf("Syntact err on line %d: %s\n", lineNumber, line);
+						printf("Err on line %d: %s\n", m_lineNumber, line);
 					}
 				}
 			}
@@ -661,4 +682,41 @@ static int isWordExistInLine(char const* line, char const* word)
 	}
 
 	return wordExist;
+}
+
+eSucsessFail handleTag(char*line ,ELineType lineType)
+{
+	eSucsessFail res = eSucsess;
+	char* dotPos = strstr(line, ":");
+	char* strtPos = dotPos;
+	
+	// find if Tag exist
+	if (dotPos != NULL)
+	{
+		// find the tag start
+		while (strtPos != line)
+		{
+			if (*strtPos == ' ')
+			{
+				break;
+			}
+
+			strtPos--;
+		}
+
+		if (lineType == eCodeLine)
+		{
+			res = addDataTagElemet(m_codePos, strtPos, dotPos - strtPos);
+		}
+		else if (lineType == eDataLine)
+		{
+			res = addDataTagElemet(m_dataPos, strtPos, dotPos - strtPos);
+		}
+		else
+		{
+			res = eFail;
+		}
+	}
+
+	return res;
 }
