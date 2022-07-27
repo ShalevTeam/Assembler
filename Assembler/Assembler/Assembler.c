@@ -161,8 +161,9 @@ void analizeLine(int lineNumber, char* line)
         handleTag(line,lineType);
         //handleCodeLine(lineNumber, line);
     }
-    //else
+    else if (lineType == eDataLine)
     {
+        handleTag(line, lineType);
         //handleInstructionLine(lineNumber, line);
     }
 }
