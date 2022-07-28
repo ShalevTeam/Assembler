@@ -18,6 +18,7 @@ static EInstructionCmnd getInstructionType(char const* line);
 static EDataCmnd getdataCmnd(char const* line);
 static ECodeCmnd getCodeCommand(char const* line);
 static int isWordExistInLine(char const* line, char const* word);
+eSucsessFail handleTag(char const* line, ELineType lineType);
 
 int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 {
@@ -684,7 +685,7 @@ static int isWordExistInLine(char const* line, char const* word)
 	return wordExist;
 }
 
-eSucsessFail handleTag(char*line ,ELineType lineType)
+eSucsessFail handleTag(char const* line ,ELineType lineType)
 {
 	eSucsessFail res = eSucsess;
 	char* dotPos = strstr(line, ":");
@@ -717,6 +718,20 @@ eSucsessFail handleTag(char*line ,ELineType lineType)
 			res = eFail;
 		}
 	}
+
+	return res;
+}
+
+eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
+{
+	eSucsessFail res = handleTag(line, eCodeLine);
+
+	return res;
+}
+
+eSucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
+{
+	eSucsessFail res = handleTag(line, eCodeLine);
 
 	return res;
 }

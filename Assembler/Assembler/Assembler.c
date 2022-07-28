@@ -6,7 +6,7 @@
 // function declerations
 void processFile(char* fileName);
 void freeCodeList(SCodeElement* elemToFree);
-void analizeLine(int lineNumber,char* line);
+eSucsessFail analizeLine(int lineNumber,char* line);
 eSucsessFail doFirstFileScan(char* fileData);
 
 int main(int argc, char** argv)
@@ -122,9 +122,12 @@ eSucsessFail doFirstFileScan(char* fileData)
 
         if (startPos != NULL)
         {
-            printf("Handle line: %s", line);
+            printf("Handle line %d: %s", lineNumber,line);
 
-            analizeLine(lineNumber,line);
+            if (!analizeLine(lineNumber, line))
+            {
+                printf("Handle line failed: %d", lineNumber);
+            }
         }
         else
         {
@@ -147,8 +150,9 @@ void freeCodeList(SCodeElement* elemToFree)
     }
 }
 
-void analizeLine(int lineNumber, char* line)
+eSucsessFail analizeLine(int lineNumber, char* line)
 {
+    eSucsessFail res = eSucsess;
     int additionalInfo = 0;
 
     setCurrentLineNumber(lineNumber);
@@ -158,12 +162,14 @@ void analizeLine(int lineNumber, char* line)
 
     if (lineType == eCodeLine)
     {
-        handleTag(line,lineType);
-        //handleCodeLine(lineNumber, line);
+        ECodeCmnd cmnd = (ECodeCmnd)additionalInfo;
+        res = handleCodeLine(line,cmnd);
     }
     else if (lineType == eDataLine)
     {
-        handleTag(line, lineType);
-        //handleInstructionLine(lineNumber, line);
+        EDataCmnd cmnd = (EDataCmnd)additionalInfo;
+        res = handleDataLine(line, cmnd);
     }
+
+    return res;
 }

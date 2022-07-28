@@ -14,7 +14,8 @@ eSucsessFail addDataTagElemet(unsigned short address, char* tagName, int tagLeng
 eSucsessFail addCodeElemet(SCodeinfo codeInfo);
 
 ELineType getLineType(int lineNumber, char const* line, int* additionalInfo);
-eSucsessFail handleTag(char* line ,ELineType lineType);
+eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd);
+eSucsessFail handleDataLine(char const* line, EDataCmnd cmnd);
 void setCurrentLineNumber(lineNumber);
 
 #endif
