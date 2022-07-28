@@ -8,6 +8,7 @@
 #define MAX_ASSEBLER_FILE_SIZE 5000
 #define MAX_LINE_LENGTH  1000
 #define CODE_INITIAL_ADDR 100
+#define MAX_OPERAND_NUM  3
 
 
 typedef enum eSucsessFail
@@ -106,13 +107,19 @@ typedef struct SExternElement
 	struct SExternElement* nextEelement;
 }SExternElement;
 
-struct SEntryElement;
 typedef struct SEntryElement
 {
 	char* tagName;
 	unsigned short address; //The Entry Tag address
 	struct SEntryElement* nextEelement;
 }SEntryElement;
+
+
+typedef struct SCommandsParams
+{
+	char const* cmndString;
+	int numOfOperands;
+}SCommandsParams;
 
 
 #endif

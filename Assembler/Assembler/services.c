@@ -7,10 +7,31 @@ SCodeElement* m_codeList = NULL; // The code that was generated
 unsigned short* m_pDataSeqtion = NULL; // The data seq
 
 // Private members
+static SCommandsParams m_CommandsParams[eMaxCodeCmnd] =
+{
+	{" NoC",2},
+	{" mov",2},
+	{" cmp",2},
+	{" add",2},
+	{" sub",2},
+	{" not",2},
+	{" clr",2},
+	{" lea",2},
+	{" inc",2},
+	{" dec",2},
+	{" jmp",2},
+	{" bne",2},
+	{" get",2},
+	{" prn",2},
+	{" jsr",2},
+	{" rts",2},
+	{"hlt",2},
+};
 static int m_lineNumber = 0;
 static int m_codePos = CODE_INITIAL_ADDR;
 static int m_dataPos = CODE_INITIAL_ADDR;
 static int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
+static char const* m_paramPtr = NULL;
 
 // Private functions
 static int isBlank(char const* line);
@@ -476,7 +497,7 @@ eSucsessFail addExternElemet(unsigned short address, char* tagName)
 ELineType getLineType(int lineNumber, char const* line, int* additionalInfo)
 {
 	ELineType lineType = eLineUndefine;
-	
+
 	if (isWordExistInLine(line, ";"))
 	{
 		lineType = eRemarkLine;
@@ -656,6 +677,7 @@ static int isWordExistInLine(char const* line, char const* word)
 {
 	int wordExist = 0;
 	char* pos;
+	char* endPos = NULL;
 
 	pos = strstr(line, word);
 
@@ -672,7 +694,7 @@ static int isWordExistInLine(char const* line, char const* word)
 		}
 
 		// Check from the right side to see if its a complet word
-		char* endPos = (pos + strlen(word));
+		endPos = (pos + strlen(word));
 
 		if( (*endPos == ' ') ||
 			(*endPos == '\n') ||
@@ -682,6 +704,10 @@ static int isWordExistInLine(char const* line, char const* word)
 		}
 	}
 
+	if (wordExist)
+	{
+		m_paramPtr = endPos;
+	}
 	return wordExist;
 }
 
@@ -725,6 +751,47 @@ eSucsessFail handleTag(char const* line ,ELineType lineType)
 eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 {
 	eSucsessFail res = handleTag(line, eCodeLine);
+	int numOfOperands = 0;
+	char* cmndOperandsArray[MAX_OPERAND_NUM];
+
+	// Search for operands
+	numOfOperands = getCmndOperandsArray(cmndOperandsArray);
+
+	switch (cmnd)
+	{
+	case emovCodeCmnd:
+		break;
+	case ecmpCodeCmnd:
+		break;
+	case eaddCodeCmnd:
+		break;
+	case esubCodeCmnd:
+		break;
+	case enotCodeCmnd:
+		break;
+	case eclrCodeCmnd:
+		break;
+	case eleaCodeCmnd:
+		break;
+	case eincCodeCmnd:
+		break;
+	case edecCodeCmnd:
+		break;
+	case ejmpCodeCmnd:
+		break;
+	case ebneCodeCmnd:
+		break;
+	case egetCodeCmnd:
+		break;
+	case eprnCodeCmnd:
+		break;
+	case ejsrCodeCmnd:
+		break;
+	case ertsCodeCmnd:
+		break;
+	case ehltCodeCmnd:
+		break;
+	}
 
 	return res;
 }
@@ -734,4 +801,83 @@ eSucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
 	eSucsessFail res = handleTag(line, eCodeLine);
 
 	return res;
+}
+
+int getCmndOperandsArray(char* cmndOperandsArray[])
+{
+	int numOperandFound = 0;
+	char const* currPos = m_paramPtr;
+	char const* strtPos = NULL;
+	int wordLength = 0;
+
+	if (m_paramPtr == NULL)
+	{
+		// Internal err
+		printf("Err on line %d unexpected null pointer\n", m_lineNumber);
+		return 0;
+	}
+
+	// Search for operands
+	while (1)
+	{
+		if ((*currPos == ' ') || (*currPos == ',') || (*currPos == '\n'))
+		{
+			if (strtPos == NULL)
+			{
+				if (*currPos == '\n')
+				{
+					// No more operands
+					break;
+				}
+				else if (*currPos == ',')
+				{
+					if (numOperandFound == 0)
+					{
+						printf("Err on line %d invalid leading comma\n", m_lineNumber);
+						return 0;
+					}
+					else
+					{
+						// Skip comma between words
+						currPos++;
+						continue;
+					}
+				}
+				else
+				{
+					// Skip leading spaces
+					currPos++;
+					continue;
+				}
+			}
+			else
+			{
+				// End of word
+				cmndOperandsArray[numOperandFound] = malloc(wordLength+1);
+				strncpy(cmndOperandsArray[numOperandFound], strtPos, wordLength);
+				cmndOperandsArray[numOperandFound][wordLength] = 0;
+				numOperandFound++;
+				wordLength = 0;
+				strtPos = NULL;
+
+				if (*currPos == '\n')
+				{
+					// No more operands
+					break;
+				}
+			}
+		}
+		else
+		{
+			if (strtPos == NULL)
+			{
+				strtPos = currPos;
+			}
+
+			wordLength++;
+		}
+		currPos++;
+	}
+
+	return numOperandFound;
 }
