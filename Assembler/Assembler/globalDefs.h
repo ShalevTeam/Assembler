@@ -8,7 +8,7 @@
 #define MAX_ASSEBLER_FILE_SIZE 5000
 #define MAX_LINE_LENGTH  1000
 #define CODE_INITIAL_ADDR 100
-#define MAX_OPERAND_NUM  3
+#define MAX_OPERAND_NUM  2
 
 
 typedef enum eSucsessFail
@@ -16,6 +16,15 @@ typedef enum eSucsessFail
 	eFail = 0,
 	eSucsess = 1
 }eSucsessFail;
+
+typedef enum EAddrType
+{
+	eEmmediateAddr, // Number
+	eDirectaddr, //Tag
+	eBaseRelativeAddr, //Struct
+	eRegisterAddr, // Register
+	eUnidentifiedAddr // Err - not identified
+}EAddrType;
 
 typedef enum ELineType
 {

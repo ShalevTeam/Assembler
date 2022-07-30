@@ -39,7 +39,8 @@ static EInstructionCmnd getInstructionType(char const* line);
 static EDataCmnd getdataCmnd(char const* line);
 static ECodeCmnd getCodeCommand(char const* line);
 static int isWordExistInLine(char const* line, char const* word);
-eSucsessFail handleTag(char const* line, ELineType lineType);
+static eSucsessFail handleTag(char const* line, ELineType lineType);
+static EAddrType getOperandAddrType(char const* oerand, int* additionalInfo);
 
 int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 {
@@ -748,14 +749,44 @@ eSucsessFail handleTag(char const* line ,ELineType lineType)
 	return res;
 }
 
+EAddrType getOperandAddrType(char const* oerand,int* additionalInfo)
+{
+	EAddrType AddrType = eUnidentifiedAddr;
+	char const* pos = NULL;
+	
+	pos = strstr(oerand, "#");
+	if (NULL == pos)
+	{
+
+	}
+	else
+	{
+		AddrType = eEmmediateAddr;
+		if ((pos+1) != NULL)
+		{
+			*additionalInfo = atoi((pos + 1));
+		}	
+	}
+	return AddrType;
+}
+
 eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 {
 	eSucsessFail res = handleTag(line, eCodeLine);
 	int numOfOperands = 0;
 	char* cmndOperandsArray[MAX_OPERAND_NUM];
+	EAddrType addrType[MAX_OPERAND_NUM];
+	int operIdx = 0;
+	int additionalInfo = 0;
 
 	// Search for operands
 	numOfOperands = getCmndOperandsArray(cmndOperandsArray);
+
+	for (operIdx = 0; operIdx < numOfOperands; operIdx++)
+	{
+		addrType[operIdx] = getOperandAddrType(cmndOperandsArray[operIdx], &additionalInfo);
+	}
+	
 
 	switch (cmnd)
 	{
@@ -859,6 +890,12 @@ int getCmndOperandsArray(char* cmndOperandsArray[])
 				numOperandFound++;
 				wordLength = 0;
 				strtPos = NULL;
+
+				if (numOperandFound == MAX_OPERAND_NUM)
+				{
+					// No more operands
+					break;
+				}
 
 				if (*currPos == '\n')
 				{
