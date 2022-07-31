@@ -757,7 +757,53 @@ eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams
 	pos = strstr(pOperandAdressingParams->operandString, "#");
 	if (NULL == pos)
 	{
+		pos = pOperandAdressingParams->operandString;
+		if ((strlen(pos) == 2) && (*pos == 'r'))
+		{
+			pOperandAdressingParams->addrType = eRegisterAddr;
+			pOperandAdressingParams->registerAddrParams.regNumber = atoi(pos + 1);
+		}
+		else
+		{
+			pos = strstr(pOperandAdressingParams->operandString, ".");
 
+			if (NULL == pos)
+			{
+				pos = pOperandAdressingParams->operandString;
+				pOperandAdressingParams->addrType = eDirectaddr;
+				pOperandAdressingParams->directaddrParams.tagName = malloc(strlen(pos)+1);
+
+				if (pOperandAdressingParams->directaddrParams.tagName == NULL)
+				{
+					printf("Err on line %d cant alloc for tag\n", m_lineNumber);
+				}
+				else
+				{
+					strncpy(pOperandAdressingParams->directaddrParams.tagName, pos, strlen(pos));
+					pOperandAdressingParams->directaddrParams.tagName[strlen(pos)] = '\0';
+				}
+			}
+			else // Struct
+			{
+				pOperandAdressingParams->addrType = eBaseRelativeAddr;
+				pOperandAdressingParams->baseRelativeAddrParams.tagName = malloc(pos- pOperandAdressingParams->operandString);
+
+				if (pOperandAdressingParams->baseRelativeAddrParams.tagName == NULL)
+				{
+					printf("Err on line %d cant alloc for tag\n", m_lineNumber);
+				}
+				else
+				{
+					strncpy(pOperandAdressingParams->baseRelativeAddrParams.tagName, 
+						pOperandAdressingParams->operandString, 
+						pos - pOperandAdressingParams->operandString);
+					pOperandAdressingParams->baseRelativeAddrParams.tagName[pos - pOperandAdressingParams->operandString] = '\0';
+					pOperandAdressingParams->baseRelativeAddrParams.tagOffset = atoi(pos+1);
+
+
+				}
+			}
+		}
 	}
 	else
 	{

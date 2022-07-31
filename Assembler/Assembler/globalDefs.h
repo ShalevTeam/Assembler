@@ -138,18 +138,18 @@ typedef struct SEmmediateAddrParams
 
 typedef struct SDirectaddrParams
 {
-	char const* tagName;
+	char* tagName;
 }SDirectaddrParams;
 
 typedef struct SBaseRelativeAddrParams
 {
-	char const* tagName;
+	char* tagName;
 	int tagOffset;
 }SBaseRelativeAddrParams;
 
 typedef struct SRegisterAddrParams
 {
-	int refNumber;
+	int regNumber;
 }SRegisterAddrParams;
 
 typedef struct SOperandAdressingParams
