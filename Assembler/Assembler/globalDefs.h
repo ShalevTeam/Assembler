@@ -131,4 +131,36 @@ typedef struct SCommandsParams
 }SCommandsParams;
 
 
+typedef struct SEmmediateAddrParams
+{
+	int number;
+}SEmmediateAddrParams;
+
+typedef struct SDirectaddrParams
+{
+	char const* tagName;
+}SDirectaddrParams;
+
+typedef struct SBaseRelativeAddrParams
+{
+	char const* tagName;
+	int tagOffset;
+}SBaseRelativeAddrParams;
+
+typedef struct SRegisterAddrParams
+{
+	int refNumber;
+}SRegisterAddrParams;
+
+typedef struct SOperandAdressingParams
+{
+	char* operandString;
+	EAddrType addrType;
+	SEmmediateAddrParams emmediateAdressingParams;
+	SDirectaddrParams directaddrParams;
+	SBaseRelativeAddrParams baseRelativeAddrParams;
+	SRegisterAddrParams registerAddrParams;
+}SOperandAdressingParams;
+
+
 #endif

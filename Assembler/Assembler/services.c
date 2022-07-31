@@ -40,7 +40,7 @@ static EDataCmnd getdataCmnd(char const* line);
 static ECodeCmnd getCodeCommand(char const* line);
 static int isWordExistInLine(char const* line, char const* word);
 static eSucsessFail handleTag(char const* line, ELineType lineType);
-static EAddrType getOperandAddrType(char const* oerand, int* additionalInfo);
+static eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams);
 
 int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 {
@@ -749,42 +749,44 @@ eSucsessFail handleTag(char const* line ,ELineType lineType)
 	return res;
 }
 
-EAddrType getOperandAddrType(char const* oerand,int* additionalInfo)
+eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams)
 {
-	EAddrType AddrType = eUnidentifiedAddr;
+	eSucsessFail res = eSucsess;
 	char const* pos = NULL;
 	
-	pos = strstr(oerand, "#");
+	pos = strstr(pOperandAdressingParams->operandString, "#");
 	if (NULL == pos)
 	{
 
 	}
 	else
 	{
-		AddrType = eEmmediateAddr;
+		pOperandAdressingParams->addrType = eEmmediateAddr;
 		if ((pos+1) != NULL)
 		{
-			*additionalInfo = atoi((pos + 1));
+			pOperandAdressingParams->emmediateAdressingParams.number = atoi((pos + 1));
 		}	
 	}
-	return AddrType;
+	return res;
 }
 
 eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 {
 	eSucsessFail res = handleTag(line, eCodeLine);
 	int numOfOperands = 0;
-	char* cmndOperandsArray[MAX_OPERAND_NUM];
-	EAddrType addrType[MAX_OPERAND_NUM];
+	SOperandAdressingParams operandAdressingParams[MAX_OPERAND_NUM];
 	int operIdx = 0;
-	int additionalInfo = 0;
 
 	// Search for operands
-	numOfOperands = getCmndOperandsArray(cmndOperandsArray);
+	numOfOperands = getCmndOperandsArray(operandAdressingParams);
 
+	// Process operands
 	for (operIdx = 0; operIdx < numOfOperands; operIdx++)
 	{
-		addrType[operIdx] = getOperandAddrType(cmndOperandsArray[operIdx], &additionalInfo);
+		if (!getOperandAddrType(&operandAdressingParams[operIdx]))
+		{
+			printf("Err on line %d invalid operands addressing\n", m_lineNumber);
+		}
 	}
 	
 
@@ -834,7 +836,7 @@ eSucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
 	return res;
 }
 
-int getCmndOperandsArray(char* cmndOperandsArray[])
+int getCmndOperandsArray(SOperandAdressingParams operandAddrPrmsArray[])
 {
 	int numOperandFound = 0;
 	char const* currPos = m_paramPtr;
@@ -884,9 +886,9 @@ int getCmndOperandsArray(char* cmndOperandsArray[])
 			else
 			{
 				// End of word
-				cmndOperandsArray[numOperandFound] = malloc(wordLength+1);
-				strncpy(cmndOperandsArray[numOperandFound], strtPos, wordLength);
-				cmndOperandsArray[numOperandFound][wordLength] = 0;
+				operandAddrPrmsArray[numOperandFound].operandString = malloc(wordLength+1);
+				strncpy(operandAddrPrmsArray[numOperandFound].operandString, strtPos, wordLength);
+				operandAddrPrmsArray[numOperandFound].operandString[wordLength] = 0;
 				numOperandFound++;
 				wordLength = 0;
 				strtPos = NULL;
