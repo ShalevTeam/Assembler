@@ -26,6 +26,14 @@ typedef enum EAddrType
 	eUnidentifiedAddr // Err - not identified
 }EAddrType;
 
+
+typedef enum EAreType
+{
+	eAreAbsulute = 0,
+	eAreExternal = 1,
+	eAreRelocatable = 2
+}EAreType;
+
 typedef enum ELineType
 {
 	eLineUndefine = 0,
@@ -45,8 +53,7 @@ typedef enum EDataCmnd
 
 typedef enum ECodeCmnd
 {
-	eNoCodeCmnd = 0,
-	emovCodeCmnd,
+	emovCodeCmnd = 0,
 	ecmpCodeCmnd,
 	eaddCodeCmnd,
 	esubCodeCmnd,
@@ -62,7 +69,8 @@ typedef enum ECodeCmnd
 	ejsrCodeCmnd,
 	ertsCodeCmnd,
 	ehltCodeCmnd,
-	eMaxCodeCmnd
+	eMaxCodeCmnd,
+	eNoCodeCmnd
 }ECodeCmnd;
 
 typedef enum EInstructionCmnd
@@ -78,10 +86,30 @@ typedef enum ECodeStatus
 	eWaitForTag = 1
 }ECodeStatus;
 
+typedef struct ScmndWordbits
+{
+	unsigned short are : 2;		/*EAreType*/
+	unsigned short dstAdr : 2;  /*EAddrType*/
+	unsigned short srcAdr : 2;	/*EAddrType*/
+	unsigned short opcode : 4;	/*ECodeCmnd*/
+}ScmndWordbits;
+
+typedef struct ScmndWordVal
+{
+	unsigned short lsb : 5;
+	unsigned short msb : 5;
+}ScmndWordVal;
+
+typedef union ScodeWord
+{
+	signed short instructionvalue : 10;
+	ScmndWordbits bits;
+	ScmndWordVal decodeVal;
+}ScodeWord;
+
 typedef struct SCodeinfo
 {
-	unsigned short address;
-	unsigned short binaryCode;
+	ScodeWord code;
 	ECodeStatus Status;
 	char* tag; // Tag which need to be translate to code
 }SCodeinfo;
@@ -96,7 +124,7 @@ typedef struct SCodeElement
 struct SAddressElement;
 typedef struct SAddressElement
 {
-	unsigned short address;
+	ScodeWord address;
 	struct SAddressElement* nextEelement;
 }SAddressElement;
 
@@ -104,7 +132,7 @@ struct STagParams;
 typedef struct STagParams
 {
 	char* tagName;
-	unsigned short tagAddr; // Address of the TAG
+	ScodeWord tagAddr; // Address of the TAG
 	struct STagParams* nextEelement;
 }STagParams;
 
@@ -119,7 +147,7 @@ typedef struct SExternElement
 typedef struct SEntryElement
 {
 	char* tagName;
-	unsigned short address; //The Entry Tag address
+	ScodeWord address; //The Entry Tag address
 	struct SEntryElement* nextEelement;
 }SEntryElement;
 

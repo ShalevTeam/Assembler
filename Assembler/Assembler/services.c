@@ -7,26 +7,6 @@ SCodeElement* m_codeList = NULL; // The code that was generated
 unsigned short* m_pDataSeqtion = NULL; // The data seq
 
 // Private members
-static SCommandsParams m_CommandsParams[eMaxCodeCmnd] =
-{
-	{" NoC",2},
-	{" mov",2},
-	{" cmp",2},
-	{" add",2},
-	{" sub",2},
-	{" not",2},
-	{" clr",2},
-	{" lea",2},
-	{" inc",2},
-	{" dec",2},
-	{" jmp",2},
-	{" bne",2},
-	{" get",2},
-	{" prn",2},
-	{" jsr",2},
-	{" rts",2},
-	{"hlt",2},
-};
 static int m_lineNumber = 0;
 static int m_codePos = CODE_INITIAL_ADDR;
 static int m_dataPos = CODE_INITIAL_ADDR;
@@ -237,7 +217,7 @@ eSucsessFail addEntryElemet(unsigned short address,char* tagName)
 			prev->nextEelement = newElem;
 		}
 
-		newElem->address = address;
+		newElem->address.instructionvalue = address;
 
 		if (tagName)
 		{
@@ -307,7 +287,7 @@ eSucsessFail addDataTagElemet(unsigned short address, char* tagName,int tagLengt
 			prev->nextEelement = newElem;
 		}
 
-		newElem->tagAddr = address;
+		newElem->tagAddr.instructionvalue = address;
 
 		if (tagName)
 		{
@@ -428,7 +408,7 @@ eSucsessFail addExternElemet(unsigned short address, char* tagName)
 
 			if (addrprev->nextEelement)
 			{
-				((SAddressElement*)addrprev->nextEelement)->address = address;
+				((SAddressElement*)addrprev->nextEelement)->address.instructionvalue = address;
 				((SAddressElement*)addrprev->nextEelement)->nextEelement = NULL;
 				return res;
 			}
@@ -475,7 +455,7 @@ eSucsessFail addExternElemet(unsigned short address, char* tagName)
 		newElem->externUseAddrList = malloc(sizeof(SAddressElement));
 		if (newElem->externUseAddrList)
 		{
-			((SAddressElement*)newElem->externUseAddrList)->address = address;
+			((SAddressElement*)newElem->externUseAddrList)->address.instructionvalue = address;
 			((SAddressElement*)newElem->externUseAddrList)->nextEelement = NULL;
 			
 		}
@@ -775,6 +755,7 @@ eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams
 
 				if (pOperandAdressingParams->directaddrParams.tagName == NULL)
 				{
+					res = eFail;
 					printf("Err on line %d cant alloc for tag\n", m_lineNumber);
 				}
 				else
@@ -790,6 +771,7 @@ eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams
 
 				if (pOperandAdressingParams->baseRelativeAddrParams.tagName == NULL)
 				{
+					res = eFail;
 					printf("Err on line %d cant alloc for tag\n", m_lineNumber);
 				}
 				else
@@ -832,9 +814,10 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 		if (!getOperandAddrType(&operandAdressingParams[operIdx]))
 		{
 			printf("Err on line %d invalid operands addressing\n", m_lineNumber);
+			res = eFail;
+			return res;
 		}
 	}
-	
 
 	switch (cmnd)
 	{
