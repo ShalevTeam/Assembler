@@ -94,6 +94,20 @@ typedef struct ScmndWordbits
 	unsigned short opcode : 4;	/*ECodeCmnd*/
 }ScmndWordbits;
 
+typedef struct SOperandRegWordbits
+{
+	unsigned short are : 2;		/*EAreType*/
+	unsigned short dstRegNum : 4;  /*register number*/
+	unsigned short srcRegNum : 4;	/*register number*/
+}SOperandRegWordbits;
+
+typedef struct SOperandValWordbits
+{
+	unsigned short are : 2;		/*EAreType*/
+	short val : 8;  /* value*/
+}SOperandValWordbits;
+
+
 typedef struct ScmndWordVal
 {
 	unsigned short lsb : 5;
@@ -102,8 +116,9 @@ typedef struct ScmndWordVal
 
 typedef union ScodeWord
 {
-	signed short instructionvalue : 10;
-	ScmndWordbits bits;
+	SOperandRegWordbits regBits;
+	SOperandValWordbits valBits;
+	ScmndWordbits cmndBits;
 	ScmndWordVal decodeVal;
 }ScodeWord;
 

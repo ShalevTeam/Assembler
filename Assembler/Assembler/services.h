@@ -8,9 +8,9 @@ int reallocAndCopyBuffer(void** outFileData, int currSize);
 char* readLine(char* startPos,char* line);
 eSucsessFail initDataBase();
 eSucsessFail addData(unsigned short val);
-eSucsessFail addEntryElemet(unsigned short address, char* tagName);
-eSucsessFail addExternElemet(unsigned short address, char* tagName);
-eSucsessFail addDataTagElemet(unsigned short address, char* tagName, int tagLength);
+eSucsessFail addEntryElemet(unsigned short address, char const* tagName);
+eSucsessFail addExternElemet(unsigned short address, char const* tagName);
+eSucsessFail addDataTagElemet(unsigned short address, char const* tagName, int tagLength);
 eSucsessFail addCodeElemet(SCodeinfo codeInfo);
 int getCmndOperandsArray(SOperandAdressingParams cmndOperandsArray[]);
 
