@@ -867,9 +867,23 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 		}
 		break;
 	case eBaseRelativeAddr: //Struct
-		pAddrParams;
+		isExternalTag = eFail;
+		tagAddr = 0;
+
 		// Check if Struct tag exist
-		pAddrParams->baseRelativeAddrParams.tagName;
+		if (tagExist(pAddrParams->baseRelativeAddrParams.tagName,&isExternalTag, &tagAddr))
+		{
+			if (isExternalTag)
+			{
+				pCodeInfo->code.valBits.are = eAreExternal;
+			}
+			else
+			{
+				pCodeInfo->code.valBits.are = eAreRelocatable;
+			}
+
+			pCodeInfo->code.valBits.val = tagAddr + pAddrParams->baseRelativeAddrParams.tagOffset;
+		}
 		break;
 	case eRegisterAddr:// Register
 		pCodeInfo->code.regBits.are = eAreAbsulute;
@@ -884,6 +898,8 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 		}
 		break;
 	case eUnidentifiedAddr: // Err - not identified
+		printf("Err on line %d cant identify addr type\n", m_lineNumber);
+		res = eFail;
 		break;
 	}
 
