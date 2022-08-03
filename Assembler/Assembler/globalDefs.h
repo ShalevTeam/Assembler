@@ -192,7 +192,8 @@ typedef struct SBaseRelativeAddrParams
 
 typedef struct SRegisterAddrParams
 {
-	int regNumber;
+	int srcRegNumber;
+	int dstRegNumber;
 }SRegisterAddrParams;
 
 typedef struct SOperandAdressingParams

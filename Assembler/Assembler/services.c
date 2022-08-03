@@ -20,9 +20,9 @@ static EDataCmnd getdataCmnd(char const* line);
 static ECodeCmnd getCodeCommand(char const* line);
 static int isWordExistInLine(char const* line, char const* word);
 static eSucsessFail handleTag(char const* line, ELineType lineType);
-static eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams);
+static eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams,int operIdx);
 static eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* pAddrParams);
-static eSucsessFail tagExist(eSucsessFail* pIsExternalTag, short* pTagAddr);
+static eSucsessFail tagExist(char const* tag,eSucsessFail* pIsExternalTag, short* pTagAddr);
 static eSucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo);
 
 
@@ -223,6 +223,7 @@ eSucsessFail addEntryElemet(unsigned short address,char const* tagName)
 		}
 
 		newElem->address.valBits.val = address;
+		newElem->nextEelement = NULL;
 
 		if (tagName)
 		{
@@ -293,6 +294,7 @@ eSucsessFail addDataTagElemet(unsigned short address, char const* tagName,int ta
 		}
 
 		newElem->tagAddr.valBits.val = address;
+		newElem->nextEelement = NULL;
 
 		if (tagName)
 		{
@@ -350,7 +352,9 @@ eSucsessFail addCodeElemet(SCodeinfo codeInfo)
 			prev->nextEelement = newElem;
 		}
 
+
 		newElem->codeInfo = codeInfo;
+		newElem->nextEelement = NULL;
 
 		if (codeInfo.tag)
 		{
@@ -443,6 +447,7 @@ eSucsessFail addExternElemet(unsigned short address, char const* tagName)
 			prev->nextEelement = newElem;
 		}
 
+		newElem->nextEelement = NULL;
 		// If we got here -> Generate new SExternElement element
 		newElem->tagName = malloc(strlen(tagName) + 1);
 		if (newElem->tagName)
@@ -734,7 +739,7 @@ eSucsessFail handleTag(char const* line ,ELineType lineType)
 	return res;
 }
 
-eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams)
+eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams,int operIdx)
 {
 	eSucsessFail res = eSucsess;
 	char const* pos = NULL;
@@ -746,7 +751,16 @@ eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams
 		if ((strlen(pos) == 2) && (*pos == 'r'))
 		{
 			pOperandAdressingParams->addrType = eRegisterAddr;
-			pOperandAdressingParams->registerAddrParams.regNumber = atoi(pos + 1);
+
+			if (operIdx == 0)
+			{
+				pOperandAdressingParams->registerAddrParams.srcRegNumber = atoi(pos + 1);
+			}
+			else
+			{
+				pOperandAdressingParams->registerAddrParams.dstRegNumber = atoi(pos + 1);
+			}
+			
 		}
 		else
 		{
@@ -809,6 +823,7 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 	eSucsessFail isExternalTag = eFail;
 	short tagAddr = 0;
 	char const* tagName;
+	char const* tmpStrPos = NULL;
 
 	switch (pAddrParams->addrType)
 	{
@@ -819,7 +834,7 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 	case eDirectaddr: //Tag
 		tagName = pAddrParams->directaddrParams.tagName;
 		// Check if tag exist
-		if (tagExist(&isExternalTag, &tagAddr))
+		if (tagExist(tagName ,&isExternalTag, &tagAddr))
 		{
 			if (isExternalTag)
 			{
@@ -833,7 +848,7 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 				pCodeInfo->code.valBits.val = tagAddr;
 			}
 		}
-		else
+		else /* Tag not exist*/
 		{
 			pCodeInfo->tag = malloc(strlen(tagName) + 1);
 
@@ -850,8 +865,24 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 			}
 
 		}
+		break;
 	case eBaseRelativeAddr: //Struct
+		pAddrParams;
+		// Check if Struct tag exist
+		pAddrParams->baseRelativeAddrParams.tagName;
+		break;
 	case eRegisterAddr:// Register
+		pCodeInfo->code.regBits.are = eAreAbsulute;
+
+		if (pAddrParams->registerAddrParams.dstRegNumber)
+		{
+			pCodeInfo->code.regBits.dstRegNum = pAddrParams->registerAddrParams.dstRegNumber;
+		}
+		if (pAddrParams->registerAddrParams.srcRegNumber)
+		{
+			pCodeInfo->code.regBits.srcRegNum = pAddrParams->registerAddrParams.srcRegNumber;
+		}
+		break;
 	case eUnidentifiedAddr: // Err - not identified
 		break;
 	}
@@ -859,9 +890,39 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 	return res;
 }
 
-eSucsessFail tagExist(eSucsessFail* pIsExternalTag, short* pTagAddr)
+eSucsessFail tagExist(char const* tag,eSucsessFail* pIsExternalTag, short* pTagAddr)
 {
-	eSucsessFail res = eSucsess;
+	eSucsessFail res = eFail;
+	SExternElement* pCurrPosExternList = m_externList;
+	STagParams* pCurrPosTagList = m_dataTagList;
+	
+	// Check the external list
+	while (pCurrPosExternList != NULL)
+	{
+		if (strcmp(pCurrPosExternList->tagName, tag) == 0)
+		{
+			*pIsExternalTag = eSucsess;
+			*pTagAddr = 0;
+			res = eSucsess;
+			return res;
+		}
+
+		pCurrPosExternList = pCurrPosExternList->nextEelement;
+	}
+
+	// Check the tag list
+	while (pCurrPosTagList != NULL)
+	{
+		if (strcmp(pCurrPosTagList->tagName, tag) == 0)
+		{
+			*pIsExternalTag = eFail;
+			*pTagAddr = pCurrPosTagList->tagAddr.valBits.val;
+			res = eSucsess;
+			return res;
+		}
+
+		pCurrPosTagList = pCurrPosTagList->nextEelement;
+	}
 
 	return res;
 }
@@ -869,6 +930,13 @@ eSucsessFail tagExist(eSucsessFail* pIsExternalTag, short* pTagAddr)
 eSucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo)
 {
 	eSucsessFail res = eSucsess;
+
+	if (pCodeInfo->tag != NULL)
+	{
+		free(pCodeInfo->tag);
+	}
+
+	memset(pCodeInfo, 0, sizeof(*pCodeInfo));
 	return res;
 }
 
@@ -876,9 +944,9 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 {
 	eSucsessFail res = handleTag(line, eCodeLine);
 	int numOfOperands = 0;
-	SOperandAdressingParams operandAdressingParams[MAX_OPERAND_NUM];
+	SOperandAdressingParams operandAdressingParams[MAX_OPERAND_NUM] = { 0, };
 	int operIdx = 0;
-	SCodeinfo codeinfo;
+	SCodeinfo codeinfo = { 0, };
 	
 	// Search for operands
 	numOfOperands = getCmndOperandsArray(operandAdressingParams);
@@ -887,7 +955,7 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	// Process operands
 	for (operIdx = 0; operIdx < numOfOperands; operIdx++)
 	{
-		if (!getOperandAddrType(&operandAdressingParams[operIdx]))
+		if (!getOperandAddrType(&operandAdressingParams[operIdx], operIdx))
 		{
 			printf("Err on line %d invalid operands addressing\n", m_lineNumber);
 			res = eFail;
@@ -896,7 +964,7 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	}
 
 	//Set the first code line data
-	memset(&codeinfo, 0, sizeof(codeinfo));
+	freeAndResetCodeInfo(&codeinfo);
 	codeinfo.code.cmndBits.are = eAreAbsulute;
 	codeinfo.code.cmndBits.opcode = cmnd;
 	
@@ -914,16 +982,23 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	freeAndResetCodeInfo(&codeinfo);
 	
 	//Handle operands
-	if (numOfOperands > 0)
+	for (operIdx = 0; operIdx < numOfOperands; operIdx++)
 	{
-		if (numOfOperands == 1)
+		if (!generateCodeElement(&codeinfo, &operandAdressingParams[operIdx]))
 		{
-			//Set the first code line code
-			if (!generateCodeElement(&codeinfo, &operandAdressingParams[0]))
+			printf("Err on line %d cant generate code for operand 1\n", m_lineNumber);
+		}
+		else
+		{
+			// Handle 2 registers - special case
+			if ((numOfOperands ==2) &&
+				(operIdx == 0) &&
+				(operandAdressingParams[0].addrType == eRegisterAddr) &&
+				(operandAdressingParams[1].addrType == eRegisterAddr))
 			{
-				printf("Err on line %d cant generate code for operand 1\n", m_lineNumber);
+				// don't add code until the second register
 			}
-			else
+			else /* Not 2 registers*/
 			{
 				if (!addCodeElemet(codeinfo))
 				{
@@ -931,7 +1006,6 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 				}
 				freeAndResetCodeInfo(&codeinfo);
 			}
-
 		}
 	}
 	
