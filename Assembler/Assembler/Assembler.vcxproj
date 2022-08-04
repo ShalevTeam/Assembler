@@ -30,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="hello.as" />
+    <None Include="ps.as" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

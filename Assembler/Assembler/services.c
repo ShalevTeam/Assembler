@@ -21,7 +21,7 @@ static ECodeCmnd getCodeCommand(char const* line);
 static int isWordExistInLine(char const* line, char const* word);
 static eSucsessFail handleTag(char const* line, ELineType lineType);
 static eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams,int operIdx);
-static eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* pAddrParams);
+static eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* pAddrParams,int activationCount);
 static eSucsessFail tagExist(char const* tag,eSucsessFail* pIsExternalTag, short* pTagAddr);
 static eSucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo);
 
@@ -363,7 +363,6 @@ eSucsessFail addCodeElemet(SCodeinfo codeInfo)
 			{
 				strcpy(newElem->codeInfo.tag, codeInfo.tag);
 				newElem->nextEelement = NULL;
-				m_codePos++;
 			}
 			else
 			{
@@ -376,6 +375,13 @@ eSucsessFail addCodeElemet(SCodeinfo codeInfo)
 	{
 		printf("Err on line %d memory alloc fail\n",m_lineNumber);
 		res = eFail;
+	}
+
+	if (res)
+	{
+		/* Increas the positions of code and data*/
+		m_codePos++;
+		m_dataPos++;
 	}
 
 	return res;
@@ -817,7 +823,7 @@ eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams
 	return res;
 }
 
-eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* pAddrParams)
+eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* pAddrParams,int activationCount)
 {
 	eSucsessFail res = eSucsess;
 	eSucsessFail isExternalTag = eFail;
@@ -867,12 +873,17 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 		}
 		break;
 	case eBaseRelativeAddr: //Struct
-		isExternalTag = eFail;
-		tagAddr = 0;
 
-		// Check if Struct tag exist
-		if (tagExist(pAddrParams->baseRelativeAddrParams.tagName,&isExternalTag, &tagAddr))
+		/* Handle the struct address*/
+		if (activationCount == 1)
 		{
+			pCodeInfo->code.valBits.are = eAreAbsulute;
+			pCodeInfo->code.valBits.val = pAddrParams->baseRelativeAddrParams.tagOffset;
+		}
+		// Check if Struct tag exist
+		else if (tagExist(pAddrParams->baseRelativeAddrParams.tagName,&isExternalTag, &tagAddr))
+		{
+			
 			if (isExternalTag)
 			{
 				pCodeInfo->code.valBits.are = eAreExternal;
@@ -882,7 +893,21 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 				pCodeInfo->code.valBits.are = eAreRelocatable;
 			}
 
-			pCodeInfo->code.valBits.val = tagAddr + pAddrParams->baseRelativeAddrParams.tagOffset;
+			pCodeInfo->code.valBits.val = tagAddr;
+		}
+		else // Tag not exist
+		{
+			pCodeInfo->tag = malloc(strlen(pAddrParams->baseRelativeAddrParams.tagName)+1);
+
+			if (pCodeInfo->tag == NULL)
+			{
+				printf("Err on line %d Allocation failed\n", m_lineNumber);
+			}
+			else
+			{
+				strcpy(pCodeInfo->tag, pAddrParams->baseRelativeAddrParams.tagName);
+				pCodeInfo->Status = eWaitForTag;
+			}
 		}
 		break;
 	case eRegisterAddr:// Register
@@ -963,6 +988,7 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	SOperandAdressingParams operandAdressingParams[MAX_OPERAND_NUM] = { 0, };
 	int operIdx = 0;
 	SCodeinfo codeinfo = { 0, };
+	int activationCount = 0; /* Used for creating 2 elements for struct*/
 	
 	// Search for operands
 	numOfOperands = getCmndOperandsArray(operandAdressingParams);
@@ -1000,7 +1026,10 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	//Handle operands
 	for (operIdx = 0; operIdx < numOfOperands; operIdx++)
 	{
-		if (!generateCodeElement(&codeinfo, &operandAdressingParams[operIdx]))
+		/* reset on each operand index*/
+		activationCount = 0;
+
+		if (!generateCodeElement(&codeinfo, &operandAdressingParams[operIdx],activationCount))
 		{
 			printf("Err on line %d cant generate code for operand 1\n", m_lineNumber);
 		}
@@ -1021,6 +1050,26 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 					printf("Err on line %d cant add code element 1\n", m_lineNumber);
 				}
 				freeAndResetCodeInfo(&codeinfo);
+
+				/* for struct we need to create another code element*/
+				if (operandAdressingParams[operIdx].addrType == eBaseRelativeAddr)
+				{
+					activationCount++;
+
+					if (!generateCodeElement(&codeinfo, &operandAdressingParams[operIdx], activationCount))
+					{
+						printf("Err on line %d cant generate code for operand 1\n", m_lineNumber);
+					}
+					else
+					{
+						if (!addCodeElemet(codeinfo))
+						{
+							printf("Err on line %d cant add code element 1\n", m_lineNumber);
+						}
+
+						freeAndResetCodeInfo(&codeinfo);
+					}
+				}
 			}
 		}
 	}
@@ -1030,7 +1079,8 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 
 eSucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
 {
-	eSucsessFail res = handleTag(line, eCodeLine);
+	// Add the TAG to the list of tags
+	eSucsessFail res = handleTag(line, eDataLine);
 
 	return res;
 }
