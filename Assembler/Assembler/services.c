@@ -1,11 +1,11 @@
 #include "services.h"
 #include "databaseHandler.h"
 
-// Private members
-static char const* m_paramPtr = NULL;
+/* Private members*/
+static char const* m_paramPtr = NULL; // Pinter to parameters of the command
 
-// Private functions
-static int isBlank(char const* line);
+/* Private functions*/
+static eSucsessFail isBlank(char const* line);
 static EInstructionCmnd getInstructionType(char const* line);
 static EDataCmnd getdataCmnd(char const* line);
 static ECodeCmnd getCodeCommand(char const* line);
@@ -13,12 +13,25 @@ static int isWordExistInLine(char const* line, char const* word);
 static eSucsessFail handleTag(char const* line, ELineType lineType);
 static eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams,int operIdx);
 static eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* pAddrParams,int activationCount);
-static eSucsessFail istagExist(char const* tag,eSucsessFail* pIsExternalTag, short* pTagAddr);
 static eSucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo);
 static eSucsessFail handleStringCmnd(char const* line);
 static eSucsessFail generateCodeForTag(SCodeinfo* pCodeInfo);
 static int getCmndOperandsArray(SOperandAdressingParams cmndOperandsArray[]);
 
+/******************************************************************************
+* Function : reallocAndCopyBuffer()
+*
+*  This function is used to allocate a buffer to twice the size of the original size and
+*  copy all the old data to the new buffer
+*
+* \param  		
+*  void** allocatedBuf: INPUT/OUTPUT:pointer to the old/new buffer
+*  int oldSize:			INPUT:the size of the old buffer
+*
+* \return 		
+*  int: the new size or 0 if fail
+*
+*******************************************************************************/
 int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 {
 	int newSize = oldSize * 2;
@@ -44,6 +57,20 @@ int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 	return newSize;
 }
 
+/******************************************************************************
+* Function : readLine()
+*
+*  This function is used to read a line from the input start position
+*  and return this line to the user
+*
+* \param
+*  char* startPos:	INPUT:  pointer to the start position in which to search for the line
+*  int line:		INPUT/OUTPUT: pointer to the line data
+*
+* \return
+*  char*: pointer to the next line start position or NULL if no more lines
+*
+*******************************************************************************/
 char* readLine(char* startPos, char* line)
 {
 	char* newStartPos = NULL;
@@ -71,7 +98,24 @@ char* readLine(char* startPos, char* line)
 	return newStartPos;
 }
 
-ELineType getLineType(int lineNumber, char const* line, int* additionalInfo)
+/******************************************************************************
+* Function : getLineType()
+*
+*  This function is used to get the line type:Instruction,Code or data.
+*  and return the type to the user
+*
+* \param
+*  char const* line:	INPUT:  pointer to the line
+*  int* additionalInfo:	OUTPUT: additional info relevant to the line type
+*  EDataCmnd* for data line
+*  EInstructionCmnd* for instruction line
+*  ECodeCmnd* for code line
+*
+* \return
+*  ELineType: The line type
+*
+*******************************************************************************/
+ELineType getLineType(char const* line, int* additionalInfo)
 {
 	ELineType lineType = eLineUndefine;
 
@@ -111,7 +155,7 @@ ELineType getLineType(int lineNumber, char const* line, int* additionalInfo)
 					// Check if line is just spaces
 					if (!isBlank(line))
 					{
-						printf("Err on line %d: %s\n", getCurrentLineNumber(), line);
+						printf("syntax err on line %d: %s", getCurrentLineNumber(), line);
 					}
 				}
 			}
@@ -122,19 +166,32 @@ ELineType getLineType(int lineNumber, char const* line, int* additionalInfo)
 	return lineType;
 }
 
-
-static int isBlank(char const* line)
+/******************************************************************************
+* Function : isBlank()
+*
+*  This function is used to check if a line is just white spaces
+*  and return eSucsess if its all white spaces
+*
+* \param
+*  char const* line:	INPUT:  pointer to the line
+* 
+*
+* \return
+*  eSucsessFail: eSucsess if line is all white spaces or eFail if its contains other characters
+*
+*******************************************************************************/
+static eSucsessFail isBlank(char const* line)
 {
 	char const* ch;
-	int is_blank = 1;
+	eSucsessFail is_blank = eSucsess;
 
 	// Iterate through each character.
-	for (ch = line; *ch != '\0'; ++ch)
+	for (ch = line; (*ch != '\0') && (*ch != '\n'); ++ch)
 	{
 		if (*ch != ' ')
 		{
 			// Found a non-whitespace character.
-			is_blank = 0;
+			is_blank = eFail;
 			break;
 		}
 	}
@@ -463,43 +520,6 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 		printf("Err on line %d cant identify addr type\n", getCurrentLineNumber());
 		res = eFail;
 		break;
-	}
-
-	return res;
-}
-
-eSucsessFail istagExist(char const* tag,eSucsessFail* pIsExternalTag, short* pTagAddr)
-{
-	eSucsessFail res = eFail;
-	SExternElement* pCurrPosExternList = getExternalList();
-	STagParams* pCurrPosTagList = getTagList();
-	
-	// Check the external list
-	while (pCurrPosExternList != NULL)
-	{
-		if (strcmp(pCurrPosExternList->tagName, tag) == 0)
-		{
-			*pIsExternalTag = eSucsess;
-			*pTagAddr = 0;
-			res = eSucsess;
-			return res;
-		}
-
-		pCurrPosExternList = pCurrPosExternList->nextEelement;
-	}
-
-	// Check the tag list
-	while (pCurrPosTagList != NULL)
-	{
-		if (strcmp(pCurrPosTagList->tagName, tag) == 0)
-		{
-			*pIsExternalTag = eFail;
-			*pTagAddr = pCurrPosTagList->tagAddr.valBits.val;
-			res = eSucsess;
-			return res;
-		}
-
-		pCurrPosTagList = pCurrPosTagList->nextEelement;
 	}
 
 	return res;

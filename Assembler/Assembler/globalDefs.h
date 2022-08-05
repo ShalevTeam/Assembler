@@ -1,6 +1,15 @@
 #ifndef _GLOBAL_DEFS_
 #define _GLOBAL_DEFS_
 
+/** @globaldef.h
+ *
+ * @brief Structures and enums used by the progrm.
+ *
+ * @par
+ * COPYRIGHT NOTICE: (c) 2022 Yam Shalev.  All rights reserved.
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

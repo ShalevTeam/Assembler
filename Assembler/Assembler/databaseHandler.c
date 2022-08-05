@@ -463,3 +463,41 @@ eSucsessFail addCodeElemet(SCodeinfo codeInfo)
 
 	return res;
 }
+
+eSucsessFail istagExist(char const* tag, eSucsessFail* pIsExternalTag, short* pTagAddr)
+{
+	eSucsessFail res = eFail;
+	SExternElement* pCurrPosExternList = getExternalList();
+	STagParams* pCurrPosTagList = getTagList();
+
+	// Check the external list
+	while (pCurrPosExternList != NULL)
+	{
+		if (strcmp(pCurrPosExternList->tagName, tag) == 0)
+		{
+			*pIsExternalTag = eSucsess;
+			*pTagAddr = 0;
+			res = eSucsess;
+			return res;
+		}
+
+		pCurrPosExternList = pCurrPosExternList->nextEelement;
+	}
+
+	// Check the tag list
+	while (pCurrPosTagList != NULL)
+	{
+		if (strcmp(pCurrPosTagList->tagName, tag) == 0)
+		{
+			*pIsExternalTag = eFail;
+			*pTagAddr = pCurrPosTagList->tagAddr.valBits.val;
+			res = eSucsess;
+			return res;
+		}
+
+		pCurrPosTagList = pCurrPosTagList->nextEelement;
+	}
+
+	return res;
+}
+

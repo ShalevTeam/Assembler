@@ -1,5 +1,13 @@
-#ifndef _SERVICES_
-#define _SERVICES_
+#ifndef _DATABASE_HANDLER_
+#define _DATABASE_HANDLER_
+
+/** @databaseHandler.h
+ *
+ * @brief Handles the program database of elements used by multiple modules
+ *
+ * @par
+ * COPYRIGHT NOTICE: (c) 2022 Yam Shalev.  All rights reserved.
+ */
 
 #include "globalDefs.h"
 
@@ -21,5 +29,6 @@ eSucsessFail addCodeElemet(SCodeinfo codeInfo);
 
 /* Services*/
 eSucsessFail initDataBase();
+eSucsessFail istagExist(char const* tag, eSucsessFail* pIsExternalTag, short* pTagAddr);
 
 #endif

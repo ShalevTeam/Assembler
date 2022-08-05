@@ -158,7 +158,7 @@ eSucsessFail analizeLine(int lineNumber, char* line)
     setCurrentLineNumber(lineNumber);
 
     // First we chek the line type
-   ELineType lineType = getLineType(lineNumber, line, &additionalInfo);
+    ELineType lineType = getLineType(line, &additionalInfo);
 
     if (lineType == eCodeLine)
     {
