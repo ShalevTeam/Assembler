@@ -17,6 +17,12 @@ typedef enum eSucsessFail
 	eSucsess = 1
 }eSucsessFail;
 
+typedef enum EtagType
+{
+	eCodeTag =0,
+	eDataTag
+}EtagType;
+
 typedef enum EAddrType
 {
 	eEmmediateAddr, // Number
@@ -148,6 +154,7 @@ typedef struct STagParams
 {
 	char* tagName;
 	ScodeWord tagAddr; // Address of the TAG
+	EtagType tagType;
 	struct STagParams* nextEelement;
 }STagParams;
 

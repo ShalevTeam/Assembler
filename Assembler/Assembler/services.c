@@ -22,10 +22,16 @@ static int isWordExistInLine(char const* line, char const* word);
 static eSucsessFail handleTag(char const* line, ELineType lineType);
 static eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams,int operIdx);
 static eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* pAddrParams,int activationCount);
-static eSucsessFail tagExist(char const* tag,eSucsessFail* pIsExternalTag, short* pTagAddr);
+static eSucsessFail istagExist(char const* tag,eSucsessFail* pIsExternalTag, short* pTagAddr);
 static eSucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo);
-
-
+static eSucsessFail handleStringCmnd(char const* line);
+static eSucsessFail generateCodeForTag(SCodeinfo* pCodeInfo);
+static eSucsessFail addDataTagElemet(unsigned short address, char const* tagName, int tagLength,EtagType);
+static eSucsessFail addData(unsigned short val);
+static eSucsessFail addEntryElemet(unsigned short address, char const* tagName);
+static eSucsessFail addExternElemet(unsigned short address, char const* tagName);
+static eSucsessFail addCodeElemet(SCodeinfo codeInfo);
+static int getCmndOperandsArray(SOperandAdressingParams cmndOperandsArray[]);
 
 int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 {
@@ -187,8 +193,8 @@ eSucsessFail addData(unsigned short val)
 	}
 	else
 	{
+		m_pDataSeqtion[m_dataPos] = val;
 		m_dataPos++;
-		*m_pDataSeqtion = val;
 	}
 
 	return res;
@@ -253,7 +259,7 @@ eSucsessFail addEntryElemet(unsigned short address,char const* tagName)
 	return res;
 }
 
-eSucsessFail addDataTagElemet(unsigned short address, char const* tagName,int tagLength)
+eSucsessFail addDataTagElemet(unsigned short address, char const* tagName,int tagLength, EtagType tagType)
 {
 	eSucsessFail res = eSucsess;
 
@@ -294,6 +300,7 @@ eSucsessFail addDataTagElemet(unsigned short address, char const* tagName,int ta
 		}
 
 		newElem->tagAddr.valBits.val = address;
+		newElem->tagType = tagType;
 		newElem->nextEelement = NULL;
 
 		if (tagName)
@@ -340,7 +347,7 @@ eSucsessFail addCodeElemet(SCodeinfo codeInfo)
 
 	SCodeElement* newElem = malloc(sizeof(SCodeElement));
 
-	if (m_entryList == NULL)
+	if (m_codeList == NULL)
 	{
 		m_codeList = newElem;
 	}
@@ -381,7 +388,6 @@ eSucsessFail addCodeElemet(SCodeinfo codeInfo)
 	{
 		/* Increas the positions of code and data*/
 		m_codePos++;
-		m_dataPos++;
 	}
 
 	return res;
@@ -728,13 +734,15 @@ eSucsessFail handleTag(char const* line ,ELineType lineType)
 			strtPos--;
 		}
 
+		/* Add tag entry */
 		if (lineType == eCodeLine)
 		{
-			res = addDataTagElemet(m_codePos, strtPos, dotPos - strtPos);
+			res = addDataTagElemet(m_codePos, strtPos, dotPos - strtPos,eCodeTag);
 		}
 		else if (lineType == eDataLine)
 		{
-			res = addDataTagElemet(m_dataPos, strtPos, dotPos - strtPos);
+			/* The data position will be updated after the first scan*/
+			res = addDataTagElemet(m_dataPos, strtPos, dotPos - strtPos, eDataTag);
 		}
 		else
 		{
@@ -838,39 +846,9 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 		pCodeInfo->code.valBits.val = pAddrParams->emmediateAdressingParams.number;
 		break;
 	case eDirectaddr: //Tag
+
 		tagName = pAddrParams->directaddrParams.tagName;
-		// Check if tag exist
-		if (tagExist(tagName ,&isExternalTag, &tagAddr))
-		{
-			if (isExternalTag)
-			{
-				pCodeInfo->code.valBits.are = eAreExternal;
-				pCodeInfo->code.valBits.val = 0;
-				addExternElemet(m_codePos, tagName);
-			}
-			else
-			{
-				pCodeInfo->code.valBits.are = eAreRelocatable;
-				pCodeInfo->code.valBits.val = tagAddr;
-			}
-		}
-		else /* Tag not exist*/
-		{
-			pCodeInfo->tag = malloc(strlen(tagName) + 1);
-
-			if (pCodeInfo->tag != NULL)
-			{
-				strcpy(pCodeInfo->tag, tagName);
-				pCodeInfo->Status = eWaitForTag;
-			}
-			else
-			{
-				printf("Err on line %d cant alloc\n", m_lineNumber);
-				res = eFail;
-				return res;
-			}
-
-		}
+		
 		break;
 	case eBaseRelativeAddr: //Struct
 
@@ -880,22 +858,7 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 			pCodeInfo->code.valBits.are = eAreAbsulute;
 			pCodeInfo->code.valBits.val = pAddrParams->baseRelativeAddrParams.tagOffset;
 		}
-		// Check if Struct tag exist
-		else if (tagExist(pAddrParams->baseRelativeAddrParams.tagName,&isExternalTag, &tagAddr))
-		{
-			
-			if (isExternalTag)
-			{
-				pCodeInfo->code.valBits.are = eAreExternal;
-			}
-			else
-			{
-				pCodeInfo->code.valBits.are = eAreRelocatable;
-			}
-
-			pCodeInfo->code.valBits.val = tagAddr;
-		}
-		else // Tag not exist
+		else // handle struct TAG
 		{
 			pCodeInfo->tag = malloc(strlen(pAddrParams->baseRelativeAddrParams.tagName)+1);
 
@@ -931,7 +894,7 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 	return res;
 }
 
-eSucsessFail tagExist(char const* tag,eSucsessFail* pIsExternalTag, short* pTagAddr)
+eSucsessFail istagExist(char const* tag,eSucsessFail* pIsExternalTag, short* pTagAddr)
 {
 	eSucsessFail res = eFail;
 	SExternElement* pCurrPosExternList = m_externList;
@@ -978,6 +941,67 @@ eSucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo)
 	}
 
 	memset(pCodeInfo, 0, sizeof(*pCodeInfo));
+	return res;
+}
+
+eSucsessFail handleStringCmnd(char const* line)
+{
+	eSucsessFail res = eSucsess;
+	char const* strPos = strstr(line,".string");
+	int Pos = 0;
+
+	if (strPos != NULL)
+	{
+		strPos += strlen(".string");
+
+		while (*(strPos+ Pos) != '\0')
+		{
+			addData(strPos[Pos]);
+
+			Pos++;
+		}
+
+		addData(0);
+	}
+	else
+	{
+		printf("Err on line %d unexpected bug\n", m_lineNumber);
+		res = eFail;
+	}
+
+
+
+
+	return res;
+}
+
+eSucsessFail generateCodeForTag(SCodeinfo* pCodeInfo)
+{
+	eSucsessFail res = eSucsess;
+	eSucsessFail isExternalTag = eSucsess;
+	short tagAddr = 0;
+
+	// Check if tag exist
+	if (tagExist(pCodeInfo->tag, &isExternalTag, &tagAddr))
+	{
+		if (isExternalTag)
+		{
+			pCodeInfo->code.valBits.are = eAreExternal;
+			pCodeInfo->code.valBits.val = 0;
+			addExternElemet(m_codePos, pCodeInfo->tag);
+		}
+		else
+		{
+			pCodeInfo->code.valBits.are = eAreRelocatable;
+			pCodeInfo->code.valBits.val = tagAddr;
+		}
+	}
+	else /* Tag not exist*/
+	{
+		printf("Err tag %s used but not defined\n", pCodeInfo->tag);
+		res = eFail;
+	}
+	
 	return res;
 }
 
@@ -1079,8 +1103,22 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 
 eSucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
 {
-	// Add the TAG to the list of tags
+	// Add TAG if exist to the list of tags
 	eSucsessFail res = handleTag(line, eDataLine);
+
+	switch (cmnd)
+	{
+	case eStringCmnd:
+		handleStringCmnd(line);
+		break;
+	case eStructCmnd:
+		break;
+	case eDataCmnd:
+		break;
+	case eNoDataCmnd:
+		res = eFail;
+		break;
+	}
 
 	return res;
 }
