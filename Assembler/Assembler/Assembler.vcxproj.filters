@@ -24,6 +24,9 @@
     <ClCompile Include="services.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="databaseHandler.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="handleMacro.h">
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="services.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="databaseHandler.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

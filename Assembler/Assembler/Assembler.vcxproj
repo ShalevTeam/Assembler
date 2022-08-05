@@ -20,10 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Assembler.c" />
+    <ClCompile Include="databaseHandler.c" />
     <ClCompile Include="handleMacro.c" />
     <ClCompile Include="services.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="databaseHandler.h" />
     <ClInclude Include="globalDefs.h" />
     <ClInclude Include="handleMacro.h" />
     <ClInclude Include="services.h" />

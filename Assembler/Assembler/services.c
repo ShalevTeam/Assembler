@@ -1,16 +1,7 @@
 #include "services.h"
-
-SEntryElement* m_entryList = NULL; // List of all entry and there address
-SExternElement* m_externList = NULL; // List of all extern and there use
-STagParams* m_dataTagList = NULL; // list of all defined TAG in the code
-SCodeElement* m_codeList = NULL; // The code that was generated
-unsigned short* m_pDataSeqtion = NULL; // The data seq
+#include "databaseHandler.h"
 
 // Private members
-static int m_lineNumber = 0;
-static int m_codePos = CODE_INITIAL_ADDR;
-static int m_dataPos = CODE_INITIAL_ADDR;
-static int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
 static char const* m_paramPtr = NULL;
 
 // Private functions
@@ -26,11 +17,6 @@ static eSucsessFail istagExist(char const* tag,eSucsessFail* pIsExternalTag, sho
 static eSucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo);
 static eSucsessFail handleStringCmnd(char const* line);
 static eSucsessFail generateCodeForTag(SCodeinfo* pCodeInfo);
-static eSucsessFail addDataTagElemet(unsigned short address, char const* tagName, int tagLength,EtagType);
-static eSucsessFail addData(unsigned short val);
-static eSucsessFail addEntryElemet(unsigned short address, char const* tagName);
-static eSucsessFail addExternElemet(unsigned short address, char const* tagName);
-static eSucsessFail addCodeElemet(SCodeinfo codeInfo);
 static int getCmndOperandsArray(SOperandAdressingParams cmndOperandsArray[]);
 
 int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
@@ -51,7 +37,7 @@ int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 	}
 	else
 	{
-		printf("Err on line %d Allocation failed\n", m_lineNumber);
+		printf("Err on line %d Allocation failed\n", getCurrentLineNumber());
 		newSize = 0;
 	}
 
@@ -79,422 +65,10 @@ char* readLine(char* startPos, char* line)
 	}
 	else
 	{
-		printf("Err on line %d invalid line length\n",m_lineNumber);
+		printf("Err on line %d invalid line length\n",getCurrentLineNumber());
 	}
 
 	return newStartPos;
-}
-
-void setCurrentLineNumber(lineNumber)
-{
-	m_lineNumber = lineNumber;
-}
-
-eSucsessFail initDataBase()
-{
-	eSucsessFail res = eSucsess;
-
-	while (m_entryList != NULL)
-	{
-		SEntryElement* pNextEntry = m_entryList->nextEelement;
-		if (m_entryList->tagName)
-		{
-			free(m_entryList->tagName);
-			m_entryList->tagName = NULL;
-		}
-		free(m_entryList);
-
-		m_entryList = pNextEntry;
-	}
-
-	while (m_externList != NULL)
-	{
-		SExternElement* pNextEntry = m_externList->nextEelement;
-
-		while (m_externList->externUseAddrList != NULL)
-		{
-			SAddressElement* pInternalNextEntry = m_externList->externUseAddrList->nextEelement;
-			
-			free(m_externList->externUseAddrList);
-
-			m_externList->externUseAddrList = pInternalNextEntry;
-		}
-
-		if (m_externList->tagName)
-		{
-			free(m_externList->tagName);
-			m_externList->tagName = NULL;
-		}
-
-		free(m_externList);
-
-		m_externList = pNextEntry;
-	}
-
-	while (m_dataTagList != NULL)
-	{
-		STagParams* pNextEntry = m_dataTagList->nextEelement;
-
-		if (m_dataTagList->tagName)
-		{
-			free(m_dataTagList->tagName);
-			m_dataTagList->tagName = NULL;
-		}
-		free(m_dataTagList);
-
-		m_dataTagList = pNextEntry;
-	}
-
-	while (m_codeList != NULL)
-	{
-		SCodeElement* pNextEntry = m_codeList->nextEelement;
-
-		if (m_codeList->codeInfo.tag)
-		{
-			free(m_codeList->codeInfo.tag);
-			m_codeList->codeInfo.tag = NULL;
-		}
-
-		free(m_codeList);
-
-		m_codeList = pNextEntry;
-	}
-
-	if (m_pDataSeqtion)
-	{
-		free(m_pDataSeqtion);
-	}
-
-	m_pDataSeqtion = malloc (sizeof(unsigned short) *m_maxDataLength);
-
-	if (m_pDataSeqtion == NULL)
-	{
-		res = eFail;
-	}
-
-	m_codePos = CODE_INITIAL_ADDR;
-	m_dataPos = CODE_INITIAL_ADDR;
-
-	return res;
-}
-
-eSucsessFail addData(unsigned short val)
-{
-	eSucsessFail res = eSucsess;
-
-	if (m_dataPos >= m_maxDataLength)
-	{
-		m_maxDataLength = reallocAndCopyBuffer(&m_pDataSeqtion, m_maxDataLength* sizeof(unsigned short));
-	}
-
-	if (m_maxDataLength == 0)
-	{
-		res = eFail;
-	}
-	else
-	{
-		m_pDataSeqtion[m_dataPos] = val;
-		m_dataPos++;
-	}
-
-	return res;
-}
-
-eSucsessFail addEntryElemet(unsigned short address,char const* tagName)
-{
-	eSucsessFail res = eSucsess;
-
-	SEntryElement* latest = m_entryList;
-	SEntryElement* prev = m_entryList;
-
-	// Find the latest element
-	while (latest != NULL)
-	{
-		prev = latest;
-		latest = latest->nextEelement;
-	}
-
-	SEntryElement* newElem = malloc(sizeof(SEntryElement));
-
-	if (m_entryList == NULL)
-	{
-		m_entryList = newElem;
-	}
-
-	if (newElem)
-	{
-		if (prev != NULL)
-		{
-			prev->nextEelement = newElem;
-		}
-
-		newElem->address.valBits.val = address;
-		newElem->nextEelement = NULL;
-
-		if (tagName)
-		{
-			newElem->tagName = malloc(strlen(tagName) + 1);
-			if (newElem->tagName)
-			{
-				strcpy(newElem->tagName, tagName);
-				newElem->nextEelement = NULL;
-			}
-			else
-			{
-				printf("Err on line %d memory alloc fail\n",m_lineNumber);
-				res = eFail;
-			}
-		}
-		else
-		{
-			newElem->tagName = NULL;
-		}
-	}
-	else
-	{
-		printf("Err on line %d memory alloc fail\n",m_lineNumber);
-		res = eFail;
-	}
-
-	return res;
-}
-
-eSucsessFail addDataTagElemet(unsigned short address, char const* tagName,int tagLength, EtagType tagType)
-{
-	eSucsessFail res = eSucsess;
-
-	STagParams* latest = m_dataTagList;
-	STagParams* prev = m_dataTagList;
-
-	// Validate tag
-	if (*tagName == ' ')
-	{
-		printf("Err on line %d Tag containe spaces\n", m_lineNumber);
-	}
-
-	// Find the latest element
-	while (latest != NULL) 
-	{
-		if (strncmp(latest->tagName, tagName, tagLength) == 0)
-		{
-			printf("Err on line %d Tag define twice: %s",m_lineNumber, tagName);
-
-			return eFail;
-		}
-		prev = latest;
-		latest = latest->nextEelement;
-	}
-
-	STagParams* newElem = malloc(sizeof(STagParams));
-
-	if (m_dataTagList == NULL)
-	{
-		m_dataTagList = newElem;
-	}
-
-	if (newElem)
-	{
-		if (prev != NULL)
-		{
-			prev->nextEelement = newElem;
-		}
-
-		newElem->tagAddr.valBits.val = address;
-		newElem->tagType = tagType;
-		newElem->nextEelement = NULL;
-
-		if (tagName)
-		{
-			newElem->tagName = malloc(tagLength + 1);
-			if (newElem->tagName)
-			{
-				strncpy(newElem->tagName, tagName, tagLength);
-				newElem->tagName[tagLength] = 0;
-				newElem->nextEelement = NULL;
-			}
-			else
-			{
-				printf("Err on line %d memory alloc fail\n",m_lineNumber);
-				res = eFail;
-			}
-		}
-		else
-		{
-			newElem->tagName = NULL;
-		}
-	}
-	else
-	{
-		printf("Err on line %d memory alloc fail\n",m_lineNumber);
-		res = eFail;
-	}
-
-	return res;
-}
-
-eSucsessFail addCodeElemet(SCodeinfo codeInfo)
-{
-	eSucsessFail res = eSucsess;
-	SCodeElement* latest = m_codeList;
-	SCodeElement* prev = m_codeList;
-
-	// Find the latest element
-	while (latest != NULL)
-	{
-		prev = latest;
-		latest = latest->nextEelement;
-	}
-
-	SCodeElement* newElem = malloc(sizeof(SCodeElement));
-
-	if (m_codeList == NULL)
-	{
-		m_codeList = newElem;
-	}
-
-	if (newElem)
-	{
-		if (prev != NULL)
-		{
-			prev->nextEelement = newElem;
-		}
-
-
-		newElem->codeInfo = codeInfo;
-		newElem->nextEelement = NULL;
-
-		if (codeInfo.tag)
-		{
-			newElem->codeInfo.tag = malloc(strlen(codeInfo.tag) + 1);
-			if (newElem->codeInfo.tag)
-			{
-				strcpy(newElem->codeInfo.tag, codeInfo.tag);
-				newElem->nextEelement = NULL;
-			}
-			else
-			{
-				printf("Err on line %d memory alloc fail\n",m_lineNumber);
-				res = eFail;
-			}
-		}
-	}
-	else
-	{
-		printf("Err on line %d memory alloc fail\n",m_lineNumber);
-		res = eFail;
-	}
-
-	if (res)
-	{
-		/* Increas the positions of code and data*/
-		m_codePos++;
-	}
-
-	return res;
-}
-
-eSucsessFail addExternElemet(unsigned short address, char const* tagName)
-{
-	eSucsessFail res = eSucsess;
-	SExternElement* latest = m_externList;
-	SExternElement* prev = m_externList;
-	eSucsessFail tagFound = eFail;
-
-	// Check if the tag exist
-	while (latest != NULL)
-	{
-		if (strcmp(latest->tagName, tagName) == 0)
-		{
-			// Tag found
-			tagFound = eSucsess;
-			
-			// Find the latest at the use list
-			SAddressElement* addrcurr = latest->externUseAddrList;
-			SAddressElement* addrprev = latest->externUseAddrList;
-			while (addrcurr != NULL)
-			{
-				addrprev = addrcurr;
-				addrcurr = addrcurr->nextEelement;
-			}
-
-			if (addrprev == NULL)
-			{
-				printf("Err on line %d unexpected null pointer\n",m_lineNumber);
-				res = eFail;
-				return res;
-			}
-
-			// Set the new element
-			addrprev->nextEelement = malloc(sizeof(SAddressElement));
-
-			if (addrprev->nextEelement)
-			{
-				((SAddressElement*)addrprev->nextEelement)->address.valBits.val = address;
-				((SAddressElement*)addrprev->nextEelement)->nextEelement = NULL;
-				return res;
-			}
-			else
-			{
-				printf("Err on line %d memory alloc fail\n",m_lineNumber);
-				res = eFail;
-				return res;
-			}
-			
-		}
-
-		latest = latest->nextEelement;
-	}
-
-	SExternElement* newElem = malloc(sizeof(SExternElement));
-
-	if (m_externList == NULL)
-	{
-		m_externList = newElem;
-	}
-
-	if (newElem)
-	{
-		if (prev != NULL)
-		{
-			prev->nextEelement = newElem;
-		}
-
-		newElem->nextEelement = NULL;
-		// If we got here -> Generate new SExternElement element
-		newElem->tagName = malloc(strlen(tagName) + 1);
-		if (newElem->tagName)
-		{
-			strcpy(newElem->tagName, tagName);
-			newElem->nextEelement = NULL;
-		}
-		else
-		{
-			printf("Err on line %d memory alloc fail\n",m_lineNumber);
-			res = eFail;
-			return res;
-		}
-
-		newElem->externUseAddrList = malloc(sizeof(SAddressElement));
-		if (newElem->externUseAddrList)
-		{
-			((SAddressElement*)newElem->externUseAddrList)->address.valBits.val = address;
-			((SAddressElement*)newElem->externUseAddrList)->nextEelement = NULL;
-			
-		}
-		else
-		{
-			printf("Err on line %d memory alloc fail\n",m_lineNumber);
-			res = eFail;
-			return res;
-		}
-	}
-	else
-	{
-		printf("Err on line %d memory alloc fail\n",m_lineNumber);
-		res = eFail;
-	}
-
-	return res;
 }
 
 ELineType getLineType(int lineNumber, char const* line, int* additionalInfo)
@@ -537,7 +111,7 @@ ELineType getLineType(int lineNumber, char const* line, int* additionalInfo)
 					// Check if line is just spaces
 					if (!isBlank(line))
 					{
-						printf("Err on line %d: %s\n", m_lineNumber, line);
+						printf("Err on line %d: %s\n", getCurrentLineNumber(), line);
 					}
 				}
 			}
@@ -737,12 +311,12 @@ eSucsessFail handleTag(char const* line ,ELineType lineType)
 		/* Add tag entry */
 		if (lineType == eCodeLine)
 		{
-			res = addDataTagElemet(m_codePos, strtPos, dotPos - strtPos,eCodeTag);
+			res = addDataTagElemet(strtPos, dotPos - strtPos,eCodeTag);
 		}
 		else if (lineType == eDataLine)
 		{
 			/* The data position will be updated after the first scan*/
-			res = addDataTagElemet(m_dataPos, strtPos, dotPos - strtPos, eDataTag);
+			res = addDataTagElemet(strtPos, dotPos - strtPos, eDataTag);
 		}
 		else
 		{
@@ -789,7 +363,7 @@ eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams
 				if (pOperandAdressingParams->directaddrParams.tagName == NULL)
 				{
 					res = eFail;
-					printf("Err on line %d cant alloc for tag\n", m_lineNumber);
+					printf("Err on line %d cant alloc for tag\n", getCurrentLineNumber());
 				}
 				else
 				{
@@ -805,7 +379,7 @@ eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams
 				if (pOperandAdressingParams->baseRelativeAddrParams.tagName == NULL)
 				{
 					res = eFail;
-					printf("Err on line %d cant alloc for tag\n", m_lineNumber);
+					printf("Err on line %d cant alloc for tag\n", getCurrentLineNumber());
 				}
 				else
 				{
@@ -864,7 +438,7 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 
 			if (pCodeInfo->tag == NULL)
 			{
-				printf("Err on line %d Allocation failed\n", m_lineNumber);
+				printf("Err on line %d Allocation failed\n", getCurrentLineNumber());
 			}
 			else
 			{
@@ -886,7 +460,7 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 		}
 		break;
 	case eUnidentifiedAddr: // Err - not identified
-		printf("Err on line %d cant identify addr type\n", m_lineNumber);
+		printf("Err on line %d cant identify addr type\n", getCurrentLineNumber());
 		res = eFail;
 		break;
 	}
@@ -897,8 +471,8 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 eSucsessFail istagExist(char const* tag,eSucsessFail* pIsExternalTag, short* pTagAddr)
 {
 	eSucsessFail res = eFail;
-	SExternElement* pCurrPosExternList = m_externList;
-	STagParams* pCurrPosTagList = m_dataTagList;
+	SExternElement* pCurrPosExternList = getExternalList();
+	STagParams* pCurrPosTagList = getTagList();
 	
 	// Check the external list
 	while (pCurrPosExternList != NULL)
@@ -965,7 +539,7 @@ eSucsessFail handleStringCmnd(char const* line)
 	}
 	else
 	{
-		printf("Err on line %d unexpected bug\n", m_lineNumber);
+		printf("Err on line %d unexpected bug\n", getCurrentLineNumber());
 		res = eFail;
 	}
 
@@ -982,13 +556,13 @@ eSucsessFail generateCodeForTag(SCodeinfo* pCodeInfo)
 	short tagAddr = 0;
 
 	// Check if tag exist
-	if (tagExist(pCodeInfo->tag, &isExternalTag, &tagAddr))
+	if (istagExist(pCodeInfo->tag, &isExternalTag, &tagAddr))
 	{
 		if (isExternalTag)
 		{
 			pCodeInfo->code.valBits.are = eAreExternal;
 			pCodeInfo->code.valBits.val = 0;
-			addExternElemet(m_codePos, pCodeInfo->tag);
+			addExternElemet(pCodeInfo->tag);
 		}
 		else
 		{
@@ -1023,7 +597,7 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	{
 		if (!getOperandAddrType(&operandAdressingParams[operIdx], operIdx))
 		{
-			printf("Err on line %d invalid operands addressing\n", m_lineNumber);
+			printf("Err on line %d invalid operands addressing\n", getCurrentLineNumber());
 			res = eFail;
 			return res;
 		}
@@ -1055,7 +629,7 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 
 		if (!generateCodeElement(&codeinfo, &operandAdressingParams[operIdx],activationCount))
 		{
-			printf("Err on line %d cant generate code for operand 1\n", m_lineNumber);
+			printf("Err on line %d cant generate code for operand 1\n", getCurrentLineNumber());
 		}
 		else
 		{
@@ -1071,7 +645,7 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 			{
 				if (!addCodeElemet(codeinfo))
 				{
-					printf("Err on line %d cant add code element 1\n", m_lineNumber);
+					printf("Err on line %d cant add code element 1\n", getCurrentLineNumber());
 				}
 				freeAndResetCodeInfo(&codeinfo);
 
@@ -1082,13 +656,13 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 
 					if (!generateCodeElement(&codeinfo, &operandAdressingParams[operIdx], activationCount))
 					{
-						printf("Err on line %d cant generate code for operand 1\n", m_lineNumber);
+						printf("Err on line %d cant generate code for operand 1\n", getCurrentLineNumber());
 					}
 					else
 					{
 						if (!addCodeElemet(codeinfo))
 						{
-							printf("Err on line %d cant add code element 1\n", m_lineNumber);
+							printf("Err on line %d cant add code element 1\n", getCurrentLineNumber());
 						}
 
 						freeAndResetCodeInfo(&codeinfo);
@@ -1133,7 +707,7 @@ int getCmndOperandsArray(SOperandAdressingParams operandAddrPrmsArray[])
 	if (m_paramPtr == NULL)
 	{
 		// Internal err
-		printf("Err on line %d unexpected null pointer\n", m_lineNumber);
+		printf("Err on line %d unexpected null pointer\n", getCurrentLineNumber());
 		return 0;
 	}
 
@@ -1153,7 +727,7 @@ int getCmndOperandsArray(SOperandAdressingParams operandAddrPrmsArray[])
 				{
 					if (numOperandFound == 0)
 					{
-						printf("Err on line %d invalid leading comma\n", m_lineNumber);
+						printf("Err on line %d invalid leading comma\n", getCurrentLineNumber());
 						return 0;
 					}
 					else
