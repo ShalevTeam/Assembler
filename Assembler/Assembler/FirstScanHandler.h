@@ -1,9 +1,9 @@
-#ifndef _SERVICES_
-#define _SERVICES_
+#ifndef _FIRST_SCAN_HANDLER_
+#define _FIRST_SCAN_HANDLER_
 
-/** @file service.h
+/** @file FirstScanHandler.h
  *
- * @brief General services for the code text processing.
+ * @brief This module handles the first scan of the input code flie
  *
  * @par
  * COPYRIGHT NOTICE: (c) 2022 Yam Shalev.  All rights reserved.

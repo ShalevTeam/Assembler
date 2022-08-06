@@ -2,6 +2,7 @@
 
 #include "globalDefs.h"
 #include "handleMacro.h"
+#include "FirstScanHandler.h"
 
 // private function declerations
 static void processFile(char* fileName);

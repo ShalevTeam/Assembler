@@ -21,10 +21,10 @@
     <ClCompile Include="handleMacro.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="services.c">
+    <ClCompile Include="databaseHandler.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="databaseHandler.c">
+    <ClCompile Include="FirstScanHandler.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,10 +35,10 @@
     <ClInclude Include="globalDefs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="services.h">
+    <ClInclude Include="databaseHandler.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="databaseHandler.h">
+    <ClInclude Include="FirstScanHandler.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

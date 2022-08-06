@@ -10,7 +10,6 @@
  */
 
 #include "globalDefs.h"
-#include "services.h"
 
 ESucsessFail handleMacros(char* srcFile, char** destFile);
 
