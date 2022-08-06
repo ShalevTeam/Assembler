@@ -7,7 +7,6 @@ add r2,STR
 LOOP: jmp W
 prn #-5
 sub r1, r4
-
 inc K
 mov S1.2, r3
 bne L3

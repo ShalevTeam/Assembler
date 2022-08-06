@@ -2,7 +2,7 @@
 #include "databaseHandler.h"
 
 /* Private members*/
-static char const* m_paramPtr = NULL; // Pinter to parameters of the command
+static char const* m_operandPosPtr = NULL; // Pointer to the operands of a command
 
 /* Private functions*/
 static ESucsessFail isBlank(char const* line);
@@ -16,7 +16,8 @@ static ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressi
 static ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo);
 static ESucsessFail handleStringCmnd(char const* line);
 static ESucsessFail generateCodeForTag(SCodeinfo* pCodeInfo);
-static int getCmndOperandsArray(SOperandAdressingParams cmndOperandsArray[]);
+static ESucsessFail isNumberOfOperandsValid(int operandNum,ECodeCmnd cmnd);
+static int setOperandsString(SOperandAdressingParams cmndOperandsArray[]);
 
 /******************************************************************************
 * Function : reallocAndCopyBuffer()
@@ -118,6 +119,9 @@ char* readLine(char* startPos, char* line)
 ELineType getLineType(char const* line, int* additionalInfo)
 {
 	ELineType lineType = eLineUndefine;
+
+	/* Reset the operands pointer before analizing a line */
+	m_operandPosPtr = NULL;
 
 	if (isWordExistInLine(line, ";"))
 	{
@@ -399,7 +403,8 @@ static ESucsessFail isWordExistInLine(char const* line, char const* word)
 
 	if (wordExist)
 	{
-		m_paramPtr = endPos;
+		// Assume a command word (if not the m_operandPosPtr will not be used)
+		m_operandPosPtr = endPos;
 	}
 	return wordExist;
 }
@@ -619,6 +624,19 @@ ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressingParam
 	return res;
 }
 
+/******************************************************************************
+* Function : freeAndResetCodeInfo()
+*
+*  This function reset fields and free all alocated data in SCodeinfo
+*
+* \param
+*  SCodeinfo* pCodeInfo: INPUT: a pointer to the code information to be free
+*  
+*
+* \return
+*  ESucsessFail: eSucsess if the code was free correctly
+*
+*******************************************************************************/
 ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo)
 {
 	ESucsessFail res = eSucsess;
@@ -632,6 +650,19 @@ ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo)
 	return res;
 }
 
+/******************************************************************************
+* Function : handleStringCmnd()
+*
+*  This function handles ".string" instruction and alocate it
+*
+* \param
+*  char const* line, INPUT: a pointer to line which contains the ".string" instruction
+*
+*
+* \return
+*  ESucsessFail: eSucsess if the ".string" was allocated correctly
+*
+*******************************************************************************/
 ESucsessFail handleStringCmnd(char const* line)
 {
 	ESucsessFail res = eSucsess;
@@ -657,12 +688,22 @@ ESucsessFail handleStringCmnd(char const* line)
 		res = eFail;
 	}
 
-
-
-
 	return res;
 }
 
+/******************************************************************************
+* Function : generateCodeForTag()
+*
+*  This function generate code information for a TAG
+*
+* \param
+*  SCodeinfo* pCodeInfo, INPUT/OUPUT: a pointer to the code info to be set
+*
+*
+* \return
+*  ESucsessFail: eSucsess if the code was set correctly
+*
+*******************************************************************************/
 ESucsessFail generateCodeForTag(SCodeinfo* pCodeInfo)
 {
 	ESucsessFail res = eSucsess;
@@ -682,6 +723,7 @@ ESucsessFail generateCodeForTag(SCodeinfo* pCodeInfo)
 		{
 			pCodeInfo->code.valBits.are = eAreRelocatable;
 			pCodeInfo->code.valBits.val = tagAddr;
+			addCodeElemet(*pCodeInfo);
 		}
 	}
 	else /* Tag not exist*/
@@ -693,6 +735,75 @@ ESucsessFail generateCodeForTag(SCodeinfo* pCodeInfo)
 	return res;
 }
 
+/******************************************************************************
+* Function : isNumberOfOperandsValid()
+*
+*  This function checks if the command has the correct number of opperands
+*
+* \param
+*  int operandNum, INPUT: The number of operands founds on the command line
+*  ECodeCmnd cmnd, INPUT: The command founds on the command line
+*
+* \return
+*  ESucsessFail: eSucsess if the number of params is valid
+*
+*******************************************************************************/
+ESucsessFail isNumberOfOperandsValid(int operandNum, ECodeCmnd cmnd)
+{
+	ESucsessFail res = eSucsess;
+	int expectedParamsNumber[] = 
+	{
+		2,/*emovCodeCmnd*/
+		2,/*ecmpCodeCmnd*/
+		2,/*eaddCodeCmnd*/
+		2,/*esubCodeCmnd*/
+		1,/*enotCodeCmnd*/
+		1,/*eclrCodeCmnd*/
+		2,/*eleaCodeCmnd*/
+		1,/*eincCodeCmnd*/
+		1,/*edecCodeCmnd*/
+		1,/*ejmpCodeCmnd*/
+		1,/*ebneCodeCmnd*/
+		1,/*egetCodeCmnd*/
+		1,/*eprnCodeCmnd*/
+		1,/*ejsrCodeCmnd*/
+		0,/*ertsCodeCmnd*/
+		0 /*ehltCodeCmnd*/
+	};
+
+	if (cmnd < sizeof(expectedParamsNumber) / sizeof(expectedParamsNumber[0]) && (cmnd >= 0))
+	{
+		res = (operandNum == expectedParamsNumber[cmnd]);
+
+		if (!res)
+		{
+			printf("Invalid number of operands, expected %d got %d\n",expectedParamsNumber[cmnd],operandNum);
+		}
+	}
+	else
+	{
+		printf("Internal bug, unexpected behaviour\n");
+		res = eFail;
+	}
+	
+
+	return res;
+}
+
+/******************************************************************************
+* Function : handleCodeLine()
+*
+*  This function handles a code line and writes all its data to the code list
+*
+* \param
+*  char const* line, INPUT: the code line to be handled
+*  ECodeCmnd cmnd, INPUT: the opcode of the command
+*
+*
+* \return
+*  ESucsessFail: eSucsess if the line was handled correctly
+*
+*******************************************************************************/
 ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 {
 	ESucsessFail res = handleTag(line, eCodeTag);
@@ -701,10 +812,17 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	int operIdx = 0;
 	SCodeinfo codeinfo = { 0, };
 	int activationCount = 0; /* Used for creating 2 elements for struct*/
-	
+
 	// Search for operands
-	numOfOperands = getCmndOperandsArray(operandAdressingParams);
+	numOfOperands = setOperandsString(operandAdressingParams);
 	
+	// Check if the number of operands is valid
+	if (!isNumberOfOperandsValid(numOfOperands,cmnd))
+	{
+		printf("Err on line %d invalid number of operands\n", getCurrentLineNumber());
+		res = eFail;
+		return res;
+	}
 	
 	// Process operands
 	for (operIdx = 0; operIdx < numOfOperands; operIdx++)
@@ -717,11 +835,12 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 		}
 	}
 
-	//Set the first code line data
+	//Set the code opcode line data
 	freeAndResetCodeInfo(&codeinfo);
 	codeinfo.code.cmndBits.are = eAreAbsulute;
 	codeinfo.code.cmndBits.opcode = cmnd;
 	
+	/* Set the addrresing type*/
 	if (numOfOperands == 1)
 	{
 		codeinfo.code.cmndBits.srcAdr = operandAdressingParams[0].addrType;
@@ -735,7 +854,7 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	addCodeElemet(codeinfo);
 	freeAndResetCodeInfo(&codeinfo);
 	
-	//Handle operands
+	// Set the code operands
 	for (operIdx = 0; operIdx < numOfOperands; operIdx++)
 	{
 		/* reset on each operand index*/
@@ -789,6 +908,20 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	return res;
 }
 
+/******************************************************************************
+* Function : handleDataLine()
+*
+*  This function handles a data line and writes all its data to the data array
+*
+* \param
+*  char const* line, INPUT: the code line to be handled
+*  EDataCmnd cmnd, INPUT: the data type
+*
+*
+* \return
+*  ESucsessFail: eSucsess if the line was handled correctly
+*
+*******************************************************************************/
 ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
 {
 	// Add TAG if exist to the list of tags
@@ -811,14 +944,29 @@ ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
 	return res;
 }
 
-int getCmndOperandsArray(SOperandAdressingParams operandAddrPrmsArray[])
+/******************************************************************************
+* Function : setOperandsString()
+*
+*  This function finds and sets all the operand strings found in a code line
+*  the function uses the m_operandPosPtr member to get the starting point of the search
+* 
+* \param
+*  SOperandAdressingParams operandAddrPrmsArray[], INPUT/OUTPUT: The array of params to be set
+*  
+*
+*
+* \return
+*  int: The number of operands found
+*
+*******************************************************************************/
+int setOperandsString(SOperandAdressingParams operandAddrPrmsArray[])
 {
 	int numOperandFound = 0;
-	char const* currPos = m_paramPtr;
+	char const* currPos = m_operandPosPtr;
 	char const* strtPos = NULL;
 	int wordLength = 0;
 
-	if (m_paramPtr == NULL)
+	if (m_operandPosPtr == NULL)
 	{
 		// Internal err
 		printf("Err on line %d unexpected null pointer\n", getCurrentLineNumber());

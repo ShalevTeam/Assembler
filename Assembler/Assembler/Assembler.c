@@ -163,6 +163,7 @@ ESucsessFail analizeLine(int lineNumber, char* line)
     if (lineType == eCodeLine)
     {
         ECodeCmnd cmnd = (ECodeCmnd)additionalInfo;
+
         res = handleCodeLine(line,cmnd);
     }
     else if (lineType == eDataLine)
