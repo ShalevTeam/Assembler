@@ -1081,3 +1081,52 @@ ESucsessFail analizeLine(int lineNumber, char const* line)
 
 	return res;
 }
+
+/******************************************************************************
+*Function : doFirstFileScan()
+*
+* This function is doing the first file scan by analizing line by line
+*
+* \param
+* char* fileData, INPUT: The file data as a string
+*
+*
+* \return
+* ESucsessFail: eSucsess if all the lines were valid
+*
+*******************************************************************************/
+ESucsessFail doFirstFileScan(char* fileData)
+{
+	ESucsessFail scanStatus = eSucsess;
+	char line[MAX_LINE_LENGTH];
+	int lineLength = 0;
+
+	// read line
+	char* startPos = fileData;
+	int lineNumber = 0;
+
+	while (1)
+	{
+		lineNumber++;
+
+		startPos = readLine(startPos, line);
+
+		if (startPos != NULL)
+		{
+			printf("Handle line %d: %s", lineNumber, line);
+
+			if (!analizeLine(lineNumber, line))
+			{
+				scanStatus = eFail;
+				printf("Handle line failed: %d", lineNumber);
+			}
+		}
+		else
+		{
+			break;
+		}
+
+	}
+
+	return scanStatus;
+}

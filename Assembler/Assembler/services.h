@@ -18,5 +18,6 @@ ELineType getLineType(char const* line, int* additionalInfo);
 ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd);
 ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd);
 ESucsessFail analizeLine(int lineNumber, char const* line);
+ESucsessFail doFirstFileScan(char* fileData);
 
 #endif
