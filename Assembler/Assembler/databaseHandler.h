@@ -30,5 +30,6 @@ ESucsessFail addCodeElemet(SCodeinfo codeInfo);
 /* Services*/
 ESucsessFail initDataBase();
 ESucsessFail istagExist(char const* tag, ESucsessFail* pIsExternalTag, short* pTagAddr);
+int reallocAndCopyBuffer(void** outFileData, int currSize);
 
 #endif

@@ -17,46 +17,12 @@ static ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo);
 static ESucsessFail handleStringCmnd(char const* line);
 static ESucsessFail generateCodeForTag(SCodeinfo* pCodeInfo);
 static ESucsessFail isNumberOfOperandsValid(int operandNum,ECodeCmnd cmnd);
+static ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd);
+static ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd);
+static char* readLine(char* startPos, char* line);
+static ELineType getLineType(char const* line, int* additionalInfo);
+static ESucsessFail analizeLine(int lineNumber, char const* line);
 static int setOperandsString(SOperandAdressingParams cmndOperandsArray[]);
-
-/******************************************************************************
-* Function : reallocAndCopyBuffer()
-*
-*  This function is used to allocate a buffer to twice the size of the original size and
-*  copy all the old data to the new buffer
-*
-* \param  		
-*  void** allocatedBuf: INPUT/OUTPUT:pointer to the old/new buffer
-*  int oldSize:			INPUT:the size of the old buffer
-*
-* \return 		
-*  int: the new size or 0 if fail
-*
-*******************************************************************************/
-int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
-{
-	int newSize = oldSize * 2;
-
-	// Save the address of the old data
-	void** oldBuf = allocatedBuf;
-
-	// allocate new buf
-	*allocatedBuf = malloc(newSize);
-
-	// Copy data from old buf to the new one
-	if (*allocatedBuf)
-	{
-		memcpy(allocatedBuf, oldBuf, oldSize);
-		free(oldBuf);
-	}
-	else
-	{
-		printf("Err on line %d Allocation failed\n", getCurrentLineNumber());
-		newSize = 0;
-	}
-
-	return newSize;
-}
 
 /******************************************************************************
 * Function : readLine()

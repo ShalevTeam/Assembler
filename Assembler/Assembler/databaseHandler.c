@@ -1,6 +1,5 @@
 
 #include "databaseHandler.h"
-#include "services.h"
 
 /* Private memebers */
 static SEntryElement* m_entryList = NULL; // List of all entry and there address
@@ -705,5 +704,44 @@ ESucsessFail istagExist(char const* tag, ESucsessFail* pIsExternalTag, short* pT
 	}
 
 	return res;
+}
+
+/******************************************************************************
+* Function : reallocAndCopyBuffer()
+*
+*  This function is used to allocate a buffer to twice the size of the original size and
+*  copy all the old data to the new buffer
+*
+* \param
+*  void** allocatedBuf: INPUT/OUTPUT:pointer to the old/new buffer
+*  int oldSize:			INPUT:the size of the old buffer
+*
+* \return
+*  int: the new size or 0 if fail
+*
+*******************************************************************************/
+int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
+{
+	int newSize = oldSize * 2;
+
+	// Save the address of the old data
+	void** oldBuf = allocatedBuf;
+
+	// allocate new buf
+	*allocatedBuf = malloc(newSize);
+
+	// Copy data from old buf to the new one
+	if (*allocatedBuf)
+	{
+		memcpy(allocatedBuf, oldBuf, oldSize);
+		free(oldBuf);
+	}
+	else
+	{
+		printf("Err on line %d Allocation failed\n", getCurrentLineNumber());
+		newSize = 0;
+	}
+
+	return newSize;
 }
 
