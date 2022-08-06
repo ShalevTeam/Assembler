@@ -1063,6 +1063,11 @@ ESucsessFail analizeLine(int lineNumber, char const* line)
 	// First we chek the line type
 	ELineType lineType = getLineType(line, &additionalInfo);
 
+	if (lineType == eLineUndefine)
+	{
+		printf("empty line\n");
+	}
+
 	if (lineType == eCodeLine)
 	{
 		ECodeCmnd cmnd = (ECodeCmnd)additionalInfo;
