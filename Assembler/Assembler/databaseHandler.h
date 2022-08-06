@@ -21,14 +21,14 @@ int getCurrentLineNumber();
 
 /* Seters*/
 void setCurrentLineNumber(lineNumber);
-eSucsessFail addEntryElemet(unsigned short address, char const* tagName);
-eSucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType);
-eSucsessFail addData(unsigned short val);
-eSucsessFail addExternElemet(char const* tagName);
-eSucsessFail addCodeElemet(SCodeinfo codeInfo);
+ESucsessFail addEntryElemet(unsigned short address, char const* tagName);
+ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType);
+ESucsessFail addData(unsigned short val);
+ESucsessFail addExternElemet(char const* tagName);
+ESucsessFail addCodeElemet(SCodeinfo codeInfo);
 
 /* Services*/
-eSucsessFail initDataBase();
-eSucsessFail istagExist(char const* tag, eSucsessFail* pIsExternalTag, short* pTagAddr);
+ESucsessFail initDataBase();
+ESucsessFail istagExist(char const* tag, ESucsessFail* pIsExternalTag, short* pTagAddr);
 
 #endif

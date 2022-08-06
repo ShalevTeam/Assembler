@@ -15,7 +15,7 @@
 int reallocAndCopyBuffer(void** outFileData, int currSize);
 char* readLine(char* startPos,char* line);
 ELineType getLineType(char const* line, int* additionalInfo);
-eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd);
-eSucsessFail handleDataLine(char const* line, EDataCmnd cmnd);
+ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd);
+ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd);
 
 #endif

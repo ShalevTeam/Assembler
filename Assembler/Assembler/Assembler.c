@@ -6,8 +6,8 @@
 // function declerations
 void processFile(char* fileName);
 void freeCodeList(SCodeElement* elemToFree);
-eSucsessFail analizeLine(int lineNumber,char* line);
-eSucsessFail doFirstFileScan(char* fileData);
+ESucsessFail analizeLine(int lineNumber,char* line);
+ESucsessFail doFirstFileScan(char* fileData);
 
 int main(int argc, char** argv)
 {
@@ -104,9 +104,9 @@ void processFile(char* fileName)
     }
 }
 
-eSucsessFail doFirstFileScan(char* fileData)
+ESucsessFail doFirstFileScan(char* fileData)
 {
-    eSucsessFail scanStatus = eSucsess;
+    ESucsessFail scanStatus = eSucsess;
     char line[MAX_LINE_LENGTH];
     int lineLength = 0;
 
@@ -150,9 +150,9 @@ void freeCodeList(SCodeElement* elemToFree)
     }
 }
 
-eSucsessFail analizeLine(int lineNumber, char* line)
+ESucsessFail analizeLine(int lineNumber, char* line)
 {
-    eSucsessFail res = eSucsess;
+    ESucsessFail res = eSucsess;
     int additionalInfo = 0;
 
     setCurrentLineNumber(lineNumber);

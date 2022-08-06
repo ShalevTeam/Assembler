@@ -7,9 +7,9 @@
 static int m_maxAllocForOutput = MAX_ASSEBLER_FILE_SIZE * FILE_SIZE_FACTOR;
 int m_outputlength = 0; //length of output file
 
-eSucsessFail handleMacros(char* inFileData, char** outFileData)
+ESucsessFail handleMacros(char* inFileData, char** outFileData)
 {
-	eSucsessFail parsOk = eSucsess;
+	ESucsessFail parsOk = eSucsess;
 
 	*outFileData = malloc(m_maxAllocForOutput);
 

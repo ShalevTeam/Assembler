@@ -49,9 +49,9 @@ int getCurrentLineNumber()
 	return m_lineNumber;
 }
 
-eSucsessFail initDataBase()
+ESucsessFail initDataBase()
 {
-	eSucsessFail res = eSucsess;
+	ESucsessFail res = eSucsess;
 
 	while (m_entryList != NULL)
 	{
@@ -137,9 +137,9 @@ eSucsessFail initDataBase()
 	return res;
 }
 
-eSucsessFail addEntryElemet(unsigned short address, char const* tagName)
+ESucsessFail addEntryElemet(unsigned short address, char const* tagName)
 {
-	eSucsessFail res = eSucsess;
+	ESucsessFail res = eSucsess;
 
 	SEntryElement* latest = m_entryList;
 	SEntryElement* prev = m_entryList;
@@ -196,9 +196,9 @@ eSucsessFail addEntryElemet(unsigned short address, char const* tagName)
 	return res;
 }
 
-eSucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType tagType)
+ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType tagType)
 {
-	eSucsessFail res = eSucsess;
+	ESucsessFail res = eSucsess;
 
 	STagParams* latest = m_dataTagList;
 	STagParams* prev = m_dataTagList;
@@ -277,9 +277,9 @@ eSucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType tagTy
 	return res;
 }
 
-eSucsessFail addData(unsigned short val)
+ESucsessFail addData(unsigned short val)
 {
-	eSucsessFail res = eSucsess;
+	ESucsessFail res = eSucsess;
 
 	if (m_dataPos >= m_maxDataLength)
 	{
@@ -299,12 +299,12 @@ eSucsessFail addData(unsigned short val)
 	return res;
 }
 
-eSucsessFail addExternElemet(char const* tagName)
+ESucsessFail addExternElemet(char const* tagName)
 {
-	eSucsessFail res = eSucsess;
+	ESucsessFail res = eSucsess;
 	SExternElement* latest = m_externList;
 	SExternElement* prev = m_externList;
-	eSucsessFail tagFound = eFail;
+	ESucsessFail tagFound = eFail;
 
 	// Check if the tag exist
 	while (latest != NULL)
@@ -403,9 +403,9 @@ eSucsessFail addExternElemet(char const* tagName)
 	return res;
 }
 
-eSucsessFail addCodeElemet(SCodeinfo codeInfo)
+ESucsessFail addCodeElemet(SCodeinfo codeInfo)
 {
-	eSucsessFail res = eSucsess;
+	ESucsessFail res = eSucsess;
 	SCodeElement* latest = m_codeList;
 	SCodeElement* prev = m_codeList;
 
@@ -464,9 +464,9 @@ eSucsessFail addCodeElemet(SCodeinfo codeInfo)
 	return res;
 }
 
-eSucsessFail istagExist(char const* tag, eSucsessFail* pIsExternalTag, short* pTagAddr)
+ESucsessFail istagExist(char const* tag, ESucsessFail* pIsExternalTag, short* pTagAddr)
 {
-	eSucsessFail res = eFail;
+	ESucsessFail res = eFail;
 	SExternElement* pCurrPosExternList = getExternalList();
 	STagParams* pCurrPosTagList = getTagList();
 

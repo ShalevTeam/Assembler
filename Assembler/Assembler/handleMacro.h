@@ -12,6 +12,6 @@
 #include "globalDefs.h"
 #include "services.h"
 
-eSucsessFail handleMacros(char* srcFile, char** destFile);
+ESucsessFail handleMacros(char* srcFile, char** destFile);
 
 #endif

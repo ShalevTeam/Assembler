@@ -20,11 +20,11 @@
 #define MAX_OPERAND_NUM  2
 
 
-typedef enum eSucsessFail
+typedef enum ESucsessFail
 {
 	eFail = 0,
 	eSucsess = 1
-}eSucsessFail;
+}ESucsessFail;
 
 typedef enum EtagType
 {

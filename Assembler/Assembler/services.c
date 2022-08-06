@@ -5,17 +5,17 @@
 static char const* m_paramPtr = NULL; // Pinter to parameters of the command
 
 /* Private functions*/
-static eSucsessFail isBlank(char const* line);
+static ESucsessFail isBlank(char const* line);
 static EInstructionCmnd getInstructionType(char const* line);
 static EDataCmnd getdataCmnd(char const* line);
 static ECodeCmnd getCodeCommand(char const* line);
-static int isWordExistInLine(char const* line, char const* word);
-static eSucsessFail handleTag(char const* line, ELineType lineType);
-static eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams,int operIdx);
-static eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* pAddrParams,int activationCount);
-static eSucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo);
-static eSucsessFail handleStringCmnd(char const* line);
-static eSucsessFail generateCodeForTag(SCodeinfo* pCodeInfo);
+static ESucsessFail isWordExistInLine(char const* line, char const* word);
+static ESucsessFail handleTag(char const* line, EtagType tagType);
+static ESucsessFail setOperandAddrParams(SOperandAdressingParams* pOperandAdressingParams,int operIdx);
+static ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressingParams* pAddrParams,int activationCount);
+static ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo);
+static ESucsessFail handleStringCmnd(char const* line);
+static ESucsessFail generateCodeForTag(SCodeinfo* pCodeInfo);
 static int getCmndOperandsArray(SOperandAdressingParams cmndOperandsArray[]);
 
 /******************************************************************************
@@ -177,13 +177,13 @@ ELineType getLineType(char const* line, int* additionalInfo)
 * 
 *
 * \return
-*  eSucsessFail: eSucsess if line is all white spaces or eFail if its contains other characters
+*  ESucsessFail: eSucsess if line is all white spaces or eFail if its contains other characters
 *
 *******************************************************************************/
-static eSucsessFail isBlank(char const* line)
+static ESucsessFail isBlank(char const* line)
 {
 	char const* ch;
-	eSucsessFail is_blank = eSucsess;
+	ESucsessFail is_blank = eSucsess;
 
 	// Iterate through each character.
 	for (ch = line; (*ch != '\0') && (*ch != '\n'); ++ch)
@@ -199,6 +199,20 @@ static eSucsessFail isBlank(char const* line)
 	return is_blank;
 }
 
+/******************************************************************************
+* Function : getInstructionType()
+*
+*  This function is used to get the instruction type: external or entry
+*  
+*
+* \param
+*  char const* line:	INPUT:  pointer to the line
+*
+*
+* \return
+*  EInstructionCmnd: eExternInstruction  or eEntryInstruction and eNoInstructionCmnd on failure
+*
+*******************************************************************************/
 static EInstructionCmnd getInstructionType(char const* line)
 {
 	EInstructionCmnd cmnd = eNoInstructionCmnd;
@@ -215,6 +229,20 @@ static EInstructionCmnd getInstructionType(char const* line)
 	return cmnd;
 }
 
+/******************************************************************************
+* Function : getdataCmnd()
+*
+*  This function is used to get the data command type: structure,string or data
+*
+*
+* \param
+*  char const* line:	INPUT:  pointer to the line
+*
+*
+* \return
+*  EDataCmnd: the type of data or eNoDataCmnd on failure
+*
+*******************************************************************************/
 static EDataCmnd getdataCmnd(char const* line)
 {
 	EDataCmnd dataCmnd = eNoDataCmnd;
@@ -235,6 +263,20 @@ static EDataCmnd getdataCmnd(char const* line)
 	return dataCmnd;
 }
 
+/******************************************************************************
+* Function : getCodeCommand()
+*
+*  This function is used to get the command opcode
+*
+*
+* \param
+*  char const* line:	INPUT:  pointer to the line
+*
+*
+* \return
+*  ECodeCmnd: the opcode of the command or eNoCodeCmnd on failure
+*
+*******************************************************************************/
 static ECodeCmnd getCodeCommand(char const* line)
 {
 	ECodeCmnd cmnd = eNoCodeCmnd;
@@ -307,7 +349,23 @@ static ECodeCmnd getCodeCommand(char const* line)
 	return cmnd;
 }
 
-static int isWordExistInLine(char const* line, char const* word)
+/******************************************************************************
+* Function : isWordExistInLine()
+*
+*  This function is used to check if a word exist in line in full: 
+*  at the begining or end of the line
+*  or with spaces or ',' after
+*
+* \param
+*  char const* line:	INPUT: pointer to the line
+*  char const* word:	INPUT: pointer to the word we looking for
+*
+*
+* \return
+*  ESucsessFail: eSucsess if word exist
+*
+*******************************************************************************/
+static ESucsessFail isWordExistInLine(char const* line, char const* word)
 {
 	int wordExist = 0;
 	char* pos;
@@ -330,8 +388,9 @@ static int isWordExistInLine(char const* line, char const* word)
 		// Check from the right side to see if its a complet word
 		endPos = (pos + strlen(word));
 
-		if( (*endPos == ' ') ||
-			(*endPos == '\n') ||
+		if((*endPos == ',')	 ||
+			(*endPos == ' ') ||
+			(*endPos == '\n')||
 			(*endPos == 0))
 		{
 			wordExist = 1;
@@ -345,9 +404,23 @@ static int isWordExistInLine(char const* line, char const* word)
 	return wordExist;
 }
 
-eSucsessFail handleTag(char const* line ,ELineType lineType)
+/******************************************************************************
+* Function : handleTag()
+*
+*  This function checks if a TAG exist in a line and add it to the TAG list
+*
+* \param
+*  char const* line: INPUT: pointer to the line
+*  EtagType		     INPUT: the tag type: Code or data
+*
+*
+* \return
+*  ESucsessFail: eSucsess if added sucseesfuly or tag not exist in the line
+*
+*******************************************************************************/
+ESucsessFail handleTag(char const* line , EtagType tagType)
 {
-	eSucsessFail res = eSucsess;
+	ESucsessFail res = eSucsess;
 	char* dotPos = strstr(line, ":");
 	char* strtPos = dotPos;
 	
@@ -366,27 +439,30 @@ eSucsessFail handleTag(char const* line ,ELineType lineType)
 		}
 
 		/* Add tag entry */
-		if (lineType == eCodeLine)
-		{
-			res = addDataTagElemet(strtPos, dotPos - strtPos,eCodeTag);
-		}
-		else if (lineType == eDataLine)
-		{
-			/* The data position will be updated after the first scan*/
-			res = addDataTagElemet(strtPos, dotPos - strtPos, eDataTag);
-		}
-		else
-		{
-			res = eFail;
-		}
+		res = addDataTagElemet(strtPos, dotPos - strtPos, tagType);
+		
 	}
 
 	return res;
 }
 
-eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams,int operIdx)
+/******************************************************************************
+* Function : setOperandAddrParams()
+*
+*  This function sets the addressing type for an operand input which contains the operand string
+*
+* \param
+*  SOperandAdressingParams* pOperandAdressingParams: INPUT/OUTPUT: pointer to operand data to update
+*  int operIdx		     INPUT: the operand index first=0,second=1
+*
+*
+* \return
+*  ESucsessFail: eSucsess if the operand params were set correctly
+*
+*******************************************************************************/
+ESucsessFail setOperandAddrParams(SOperandAdressingParams* pOperandAdressingParams,int operIdx)
 {
-	eSucsessFail res = eSucsess;
+	ESucsessFail res = eSucsess;
 	char const* pos = NULL;
 	
 	pos = strstr(pOperandAdressingParams->operandString, "#");
@@ -462,10 +538,25 @@ eSucsessFail getOperandAddrType(SOperandAdressingParams* pOperandAdressingParams
 	return res;
 }
 
-eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* pAddrParams,int activationCount)
+/******************************************************************************
+* Function : generateCodeForOperand()
+*
+*  This function sets all the code information which is needed for writing a code line for an operand
+*
+* \param
+*  SCodeinfo* pCodeInfo: INPUT/OUTPUT: a pointer to the code information to be set
+*  SOperandAdressingParams* pOperandAdressingParams: INPUT: pointer to operand data
+*  int callCount:	INPUT: the call count for this operand ('structs' operand coding needs 2 calls for this function)
+*
+*
+* \return
+*  ESucsessFail: eSucsess if the code information was set correctly
+*
+*******************************************************************************/
+ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressingParams* pAddrParams,int callCount)
 {
-	eSucsessFail res = eSucsess;
-	eSucsessFail isExternalTag = eFail;
+	ESucsessFail res = eSucsess;
+	ESucsessFail isExternalTag = eFail;
 	short tagAddr = 0;
 	char const* tagName;
 	char const* tmpStrPos = NULL;
@@ -476,20 +567,22 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 		pCodeInfo->code.valBits.are = eAreAbsulute;
 		pCodeInfo->code.valBits.val = pAddrParams->emmediateAdressingParams.number;
 		break;
+
 	case eDirectaddr: //Tag
 
 		tagName = pAddrParams->directaddrParams.tagName;
 		
 		break;
+
 	case eBaseRelativeAddr: //Struct
 
-		/* Handle the struct address*/
-		if (activationCount == 1)
+		/* Set the struct offset*/
+		if (callCount == 1)
 		{
 			pCodeInfo->code.valBits.are = eAreAbsulute;
 			pCodeInfo->code.valBits.val = pAddrParams->baseRelativeAddrParams.tagOffset;
 		}
-		else // handle struct TAG
+		else // Set the struct TAG
 		{
 			pCodeInfo->tag = malloc(strlen(pAddrParams->baseRelativeAddrParams.tagName)+1);
 
@@ -504,6 +597,7 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 			}
 		}
 		break;
+
 	case eRegisterAddr:// Register
 		pCodeInfo->code.regBits.are = eAreAbsulute;
 
@@ -525,9 +619,9 @@ eSucsessFail generateCodeElement(SCodeinfo* pCodeInfo, SOperandAdressingParams* 
 	return res;
 }
 
-eSucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo)
+ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo)
 {
-	eSucsessFail res = eSucsess;
+	ESucsessFail res = eSucsess;
 
 	if (pCodeInfo->tag != NULL)
 	{
@@ -538,9 +632,9 @@ eSucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo)
 	return res;
 }
 
-eSucsessFail handleStringCmnd(char const* line)
+ESucsessFail handleStringCmnd(char const* line)
 {
-	eSucsessFail res = eSucsess;
+	ESucsessFail res = eSucsess;
 	char const* strPos = strstr(line,".string");
 	int Pos = 0;
 
@@ -569,10 +663,10 @@ eSucsessFail handleStringCmnd(char const* line)
 	return res;
 }
 
-eSucsessFail generateCodeForTag(SCodeinfo* pCodeInfo)
+ESucsessFail generateCodeForTag(SCodeinfo* pCodeInfo)
 {
-	eSucsessFail res = eSucsess;
-	eSucsessFail isExternalTag = eSucsess;
+	ESucsessFail res = eSucsess;
+	ESucsessFail isExternalTag = eSucsess;
 	short tagAddr = 0;
 
 	// Check if tag exist
@@ -599,9 +693,9 @@ eSucsessFail generateCodeForTag(SCodeinfo* pCodeInfo)
 	return res;
 }
 
-eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
+ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 {
-	eSucsessFail res = handleTag(line, eCodeLine);
+	ESucsessFail res = handleTag(line, eCodeTag);
 	int numOfOperands = 0;
 	SOperandAdressingParams operandAdressingParams[MAX_OPERAND_NUM] = { 0, };
 	int operIdx = 0;
@@ -615,7 +709,7 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	// Process operands
 	for (operIdx = 0; operIdx < numOfOperands; operIdx++)
 	{
-		if (!getOperandAddrType(&operandAdressingParams[operIdx], operIdx))
+		if (!setOperandAddrParams(&operandAdressingParams[operIdx], operIdx))
 		{
 			printf("Err on line %d invalid operands addressing\n", getCurrentLineNumber());
 			res = eFail;
@@ -647,7 +741,7 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 		/* reset on each operand index*/
 		activationCount = 0;
 
-		if (!generateCodeElement(&codeinfo, &operandAdressingParams[operIdx],activationCount))
+		if (!generateCodeForOperand(&codeinfo, &operandAdressingParams[operIdx],activationCount))
 		{
 			printf("Err on line %d cant generate code for operand 1\n", getCurrentLineNumber());
 		}
@@ -674,7 +768,7 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 				{
 					activationCount++;
 
-					if (!generateCodeElement(&codeinfo, &operandAdressingParams[operIdx], activationCount))
+					if (!generateCodeForOperand(&codeinfo, &operandAdressingParams[operIdx], activationCount))
 					{
 						printf("Err on line %d cant generate code for operand 1\n", getCurrentLineNumber());
 					}
@@ -695,10 +789,10 @@ eSucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	return res;
 }
 
-eSucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
+ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
 {
 	// Add TAG if exist to the list of tags
-	eSucsessFail res = handleTag(line, eDataLine);
+	ESucsessFail res = handleTag(line, eDataTag);
 
 	switch (cmnd)
 	{
