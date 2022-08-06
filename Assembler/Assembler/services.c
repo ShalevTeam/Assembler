@@ -1043,3 +1043,41 @@ int setOperandsString(SOperandAdressingParams operandAddrPrmsArray[])
 
 	return numOperandFound;
 }
+
+/******************************************************************************
+*Function : analizeLine()
+*
+* This function is analizing a code line and generates its info
+*
+* \param
+* int lineNumber, INPUT: The line number to analize
+* char* line, INPUT: The line data
+*
+* \return
+* ESucsessFail: eSucsess if the lines is valid
+*
+*******************************************************************************/
+ESucsessFail analizeLine(int lineNumber, char const* line)
+{
+	ESucsessFail res = eSucsess;
+	int additionalInfo = 0;
+
+	setCurrentLineNumber(lineNumber);
+
+	// First we chek the line type
+	ELineType lineType = getLineType(line, &additionalInfo);
+
+	if (lineType == eCodeLine)
+	{
+		ECodeCmnd cmnd = (ECodeCmnd)additionalInfo;
+
+		res = handleCodeLine(line, cmnd);
+	}
+	else if (lineType == eDataLine)
+	{
+		EDataCmnd cmnd = (EDataCmnd)additionalInfo;
+		res = handleDataLine(line, cmnd);
+	}
+
+	return res;
+}

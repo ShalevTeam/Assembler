@@ -13,42 +13,21 @@ static int m_codePos = CODE_INITIAL_ADDR;
 static int m_dataPos = CODE_INITIAL_ADDR;
 static int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
 
-SEntryElement* getEntryList()
-{
-	return m_entryList;
-}
-
-SExternElement* getExternalList()
-{
-	return m_externList;
-}
-
-STagParams* getTagList()
-{
-	return m_dataTagList;
-}
-
-SCodeElement* getCodeList()
-{
-	return m_codeList;
-}
-
-unsigned short* getDataArray()
-{
-	return m_pDataSeqtion;
-}
-
-
-void setCurrentLineNumber(lineNumber)
-{
-	m_lineNumber = lineNumber;
-}
-
-int getCurrentLineNumber()
-{
-	return m_lineNumber;
-}
-
+/******************************************************************************
+* Function : initDataBase()
+*
+*  This function inits all the database objects. needs to be call before handling a new code file
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  None.
+*
+*******************************************************************************/
 ESucsessFail initDataBase()
 {
 	ESucsessFail res = eSucsess;
@@ -137,6 +116,161 @@ ESucsessFail initDataBase()
 	return res;
 }
 
+/******************************************************************************
+* Function : getEntryList()
+*
+*  This function returns a pointer to the entry list
+*  
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  SEntryElement* : A pointer to the entry list
+*
+*******************************************************************************/
+SEntryElement* getEntryList()
+{
+	return m_entryList;
+}
+
+/******************************************************************************
+* Function : getExternalList()
+*
+*  This function returns a pointer to the externals list
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  SExternElement*: A pointer to the externals list
+*
+*******************************************************************************/
+SExternElement* getExternalList()
+{
+	return m_externList;
+}
+
+/******************************************************************************
+* Function : getTagList()
+*
+*  This function returns a pointer to the TAG list
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  STagParams*: A pointer to the TAG list
+*
+*******************************************************************************/
+STagParams* getTagList()
+{
+	return m_dataTagList;
+}
+
+/******************************************************************************
+* Function : getCodeList()
+*
+*  This function returns a pointer to the code list
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  SCodeElement*: A pointer to the code list
+*
+*******************************************************************************/
+SCodeElement* getCodeList()
+{
+	return m_codeList;
+}
+
+/******************************************************************************
+* Function : getDataArray()
+*
+*  This function returns a pointer to the data segment array
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  unsigned short*: A pointer to the data segment array
+*
+*******************************************************************************/
+unsigned short* getDataArray()
+{
+	return m_pDataSeqtion;
+}
+
+/******************************************************************************
+* Function : getCurrentLineNumber()
+*
+*  This function returns the current line number which is handled
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  int: the line number
+*
+*******************************************************************************/
+int getCurrentLineNumber()
+{
+	return m_lineNumber;
+}
+
+/******************************************************************************
+* Function : setCurrentLineNumber()
+*
+*  This function sets the current line number
+*
+*
+* \param
+*  int lineNumber, INPUT: The line number to set
+*
+*
+*
+* \return
+*  None.
+*
+*******************************************************************************/
+void setCurrentLineNumber(int lineNumber)
+{
+	m_lineNumber = lineNumber;
+}
+
+/******************************************************************************
+* Function : addEntryElemet()
+*
+*  This function adds an element to the Entry list
+*
+*
+* \param
+*  unsigned short address, INPUT: The addrress of the Entry
+*  char const* tagName, INPUT: The Entry TAG
+*
+*
+* \return
+*  ESucsessFail: eSucsess if added OK
+*
+*******************************************************************************/
 ESucsessFail addEntryElemet(unsigned short address, char const* tagName)
 {
 	ESucsessFail res = eSucsess;
@@ -196,6 +330,21 @@ ESucsessFail addEntryElemet(unsigned short address, char const* tagName)
 	return res;
 }
 
+/******************************************************************************
+* Function : addDataTagElemet()
+*
+*  This function adds an element to the Tags list
+*
+*
+* \param
+*  char const* tagName, INPUT: The Entry TAG
+*  int tagLength, INPUT: The tag length
+*  EtagType tagType, INPUT: The tad type
+*
+* \return
+*  ESucsessFail: eSucsess if added OK
+*
+*******************************************************************************/
 ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType tagType)
 {
 	ESucsessFail res = eSucsess;
@@ -277,6 +426,20 @@ ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType tagTy
 	return res;
 }
 
+/******************************************************************************
+* Function : addDataTagElemet()
+*
+*  This function adds an element to the data segmnet array
+*
+*
+* \param
+*  unsigned short val, INPUT: The value to add
+*  
+*
+* \return
+*  ESucsessFail: eSucsess if added OK
+*
+*******************************************************************************/
 ESucsessFail addData(unsigned short val)
 {
 	ESucsessFail res = eSucsess;
@@ -299,6 +462,20 @@ ESucsessFail addData(unsigned short val)
 	return res;
 }
 
+/******************************************************************************
+* Function : addDataTagElemet()
+*
+*  This function adds an element to the externals list
+*
+*
+* \param
+*  char const* tagName, INPUT: The tag name
+*
+*
+* \return
+*  ESucsessFail: eSucsess if added OK
+*
+*******************************************************************************/
 ESucsessFail addExternElemet(char const* tagName)
 {
 	ESucsessFail res = eSucsess;
@@ -403,6 +580,20 @@ ESucsessFail addExternElemet(char const* tagName)
 	return res;
 }
 
+/******************************************************************************
+* Function : addCodeElemet()
+*
+*  This function adds an element to the code list
+*
+*
+* \param
+*  SCodeinfo codeInfo, INPUT: The code data
+*
+*
+* \return
+*  ESucsessFail: eSucsess if added OK
+*
+*******************************************************************************/
 ESucsessFail addCodeElemet(SCodeinfo codeInfo)
 {
 	ESucsessFail res = eSucsess;
@@ -464,6 +655,21 @@ ESucsessFail addCodeElemet(SCodeinfo codeInfo)
 	return res;
 }
 
+/******************************************************************************
+* Function : istagExist()
+*
+*  This function checks if a tag was already defined
+*
+*
+* \param
+*  char const* tag, INPUT: The tags name
+*  ESucsessFail* pIsExternalTag, INPUT/OUTPUT: sets eSucsess if the tag is external
+*  short* pTagAddr, INPUT/OUTPUT: sets the tags addrress
+*
+* \return
+*  ESucsessFail: eSucsess if added OK
+*
+*******************************************************************************/
 ESucsessFail istagExist(char const* tag, ESucsessFail* pIsExternalTag, short* pTagAddr)
 {
 	ESucsessFail res = eFail;

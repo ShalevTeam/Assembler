@@ -5,10 +5,22 @@
 
 // function declerations
 void processFile(char* fileName);
-void freeCodeList(SCodeElement* elemToFree);
-ESucsessFail analizeLine(int lineNumber,char* line);
 ESucsessFail doFirstFileScan(char* fileData);
 
+/******************************************************************************
+* Function : main()
+*
+*  This is the main function. it receives files of code to proccess and process them
+*  
+*
+* \param
+*  int argc, INPUT: input params count
+*  char** argv, INPUT: input params data
+*  
+* \return
+*  int: 0 on succsess and -1 on fail
+*
+*******************************************************************************/
 int main(int argc, char** argv)
 {
     int i;    
@@ -38,6 +50,24 @@ int main(int argc, char** argv)
     return 0;
 }
 
+/******************************************************************************
+*Function : processFile()
+*
+* This function proceess a single code file and generates its outputs
+* 1. Open the file
+* 2. Handle macro
+* 3. Do first scan
+* 4. Do Second scan
+* 5. Generate the output files
+*
+* \param
+* char* fileName, INPUT: The file name to proccess
+* 
+*
+* \return
+* None.
+*
+*******************************************************************************/
 void processFile(char* fileName)
 {
     printf("handle file %s\n", fileName);
@@ -104,6 +134,19 @@ void processFile(char* fileName)
     }
 }
 
+/******************************************************************************
+*Function : doFirstFileScan()
+*
+* This function is doing the first file scan by analizing line by line
+*
+* \param
+* char* fileData, INPUT: The file data as a string
+*
+*
+* \return
+* ESucsessFail: eSucsess if all the lines were valid
+*
+*******************************************************************************/
 ESucsessFail doFirstFileScan(char* fileData)
 {
     ESucsessFail scanStatus = eSucsess;
@@ -126,6 +169,7 @@ ESucsessFail doFirstFileScan(char* fileData)
 
             if (!analizeLine(lineNumber, line))
             {
+                scanStatus = eFail;
                 printf("Handle line failed: %d", lineNumber);
             }
         }
@@ -139,38 +183,4 @@ ESucsessFail doFirstFileScan(char* fileData)
     return scanStatus;
 }
 
-void freeCodeList(SCodeElement* elemToFree)
-{
-    while (elemToFree)
-    {
 
-        SCodeElement* next = elemToFree->nextEelement;
-        free(elemToFree);
-        elemToFree = next;
-    }
-}
-
-ESucsessFail analizeLine(int lineNumber, char* line)
-{
-    ESucsessFail res = eSucsess;
-    int additionalInfo = 0;
-
-    setCurrentLineNumber(lineNumber);
-
-    // First we chek the line type
-    ELineType lineType = getLineType(line, &additionalInfo);
-
-    if (lineType == eCodeLine)
-    {
-        ECodeCmnd cmnd = (ECodeCmnd)additionalInfo;
-
-        res = handleCodeLine(line,cmnd);
-    }
-    else if (lineType == eDataLine)
-    {
-        EDataCmnd cmnd = (EDataCmnd)additionalInfo;
-        res = handleDataLine(line, cmnd);
-    }
-
-    return res;
-}
