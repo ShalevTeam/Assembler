@@ -15,6 +15,7 @@ static ESucsessFail setOperandAddrParams(SOperandAdressingParams* pOperandAdress
 static ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressingParams* pAddrParams,int activationCount);
 static ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo);
 static ESucsessFail handleStringCmnd(char const* line);
+static ESucsessFail handleStructCmnd(char const* line);
 static ESucsessFail generateCodeForTag(SCodeinfo* pCodeInfo);
 static ESucsessFail isNumberOfOperandsValid(int operandNum,ECodeCmnd cmnd);
 static ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd);
@@ -41,12 +42,15 @@ static int setOperandsString(SOperandAdressingParams cmndOperandsArray[]);
 char* readLine(char* startPos, char* line)
 {
 	char* newStartPos = NULL;
+	int isLastLine = 0;
 
 	char* endpos = strchr(startPos, '\n');
 
 	if (endpos == NULL)
 	{
-		return NULL;
+		endpos = strchr(startPos, '\0');
+
+		isLastLine = 1;	
 	}
 
 	int sizeToCopy = (int)(1 + endpos - startPos);
@@ -55,7 +59,15 @@ char* readLine(char* startPos, char* line)
 	{
 		strncpy(line, startPos, sizeToCopy);
 		line[sizeToCopy] = 0;
-		newStartPos = endpos + 1;
+
+		if (isLastLine)
+		{
+			newStartPos = endpos;
+		}
+		else
+		{
+			newStartPos = endpos + 1;
+		}	
 	}
 	else
 	{
@@ -617,6 +629,23 @@ ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo)
 }
 
 /******************************************************************************
+* Function : handleStructCmnd()
+*
+*  This function handles ".struct" instruction and alocate it
+*
+* \param
+*  char const* line, INPUT: a pointer to line which contains the ".string" instruction
+*
+*
+* \return
+*  ESucsessFail: eSucsess if the ".string" was allocated correctly
+*
+*******************************************************************************/
+ESucsessFail handleStructCmnd(char const* line)
+{
+}
+
+/******************************************************************************
 * Function : handleStringCmnd()
 *
 *  This function handles ".string" instruction and alocate it
@@ -899,6 +928,7 @@ ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
 		handleStringCmnd(line);
 		break;
 	case eStructCmnd:
+		handleStructCmnd(line);
 		break;
 	case eDataCmnd:
 		break;
@@ -1071,7 +1101,7 @@ ESucsessFail doFirstFileScan(char* fileData)
 	char* startPos = fileData;
 	int lineNumber = 0;
 
-	while (1)
+	while (*startPos != '\0')
 	{
 		lineNumber++;
 

@@ -70,34 +70,46 @@ int main(int argc, char** argv)
 *******************************************************************************/
 void processFile(char* fileName)
 {
-    printf("handle file %s\n", fileName);
-
-    // Read all file data to string
+    int fileSize = 0;
+    int filePos = 0;
+    int fileData = 0;
+    char* postProccesData = NULL;
     FILE* file = NULL;
     file = fopen(fileName, "r");
 
+    printf("handle file %s\n", fileName);
+
+    fseek(file, 0L, SEEK_END);
+    fileSize = ftell(file);
+
+    fseek(file, 0L, SEEK_SET);
+
+    /* Allocate buffer for data read*/
+    char* rawCodeData = malloc(fileSize);
+
     if (file)
     {
-        // Get file size
-        int fileSize = 0;
-        char* postProccesData = NULL;
-
-        fseek(file, 0L, SEEK_END);
-        fileSize = ftell(file);
-
-        fseek(file, 0L, SEEK_SET);
-
-        char* rawCodeData = malloc(fileSize+1);
-
         if (rawCodeData)
         {
-            rawCodeData[0] = '\0';
-            rawCodeData[fileSize] = '\0';
+            /* Read all the file content*/
+            while  (1)
+            {
+                fileData = fgetc(file);
 
-            int generatedCodeLength = 0;
+                if (fileData == EOF)
+                {
+                    break;
+                }
+                else
+                {
+                    rawCodeData[filePos] = (char)fileData;
+                }
+                
+                filePos++;
+            }
 
-            // read all file data to struct SCodeElement
-            fread(rawCodeData, fileSize+1, 1, file);
+            // End the string
+            rawCodeData[filePos] = '\0';
 
             // Init all data structure
             initDataBase();
@@ -108,7 +120,7 @@ void processFile(char* fileName)
 
                 if (doFirstFileScan(postProccesData))
                 {
-                    printf("done first file scan for %s\n", fileName); 
+                    printf("\ndone first file scan for %s\n", fileName); 
                 }
                 else
                 {
