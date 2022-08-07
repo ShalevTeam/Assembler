@@ -14,4 +14,4 @@ END: hlt
 STR: .string "abcdef"
 LENGTH: .data 6,-9,15
 K: .data 22
-S1: .struct 8, "ab"
+S1: .struct                8, "ab"

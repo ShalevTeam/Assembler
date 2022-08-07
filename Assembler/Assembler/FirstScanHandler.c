@@ -638,11 +638,66 @@ ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo)
 *
 *
 * \return
-*  ESucsessFail: eSucsess if the ".string" was allocated correctly
+*  ESucsessFail: eSucsess if the ".struct" was allocated correctly
 *
 *******************************************************************************/
 ESucsessFail handleStructCmnd(char const* line)
 {
+	/* Our memory can hold bigger numbers*/
+	#define MAX_NUMBER_DIGITS  10
+
+	/* Find the comma position*/
+	char* commaPos = strchr(m_operandPosPtr, ',');
+	char Value[MAX_NUMBER_DIGITS];
+
+	if (commaPos == NULL)
+	{
+		printf("Err on line %d invalid struct\n", getCurrentLineNumber());
+	}
+	else
+	{
+		/* Ignore spaces*/
+		while (*m_operandPosPtr == ' ')
+		{
+			m_operandPosPtr++;
+		}
+
+		/* handle the number*/
+		strncpy(Value, m_operandPosPtr, commaPos - m_operandPosPtr);
+		Value[commaPos - m_operandPosPtr] = '\0';
+		addData(atoi(Value));
+
+		/* Add the struct string */
+
+		/* Ignore spaces*/
+		commaPos++;
+		while((*commaPos == ' ') ||
+			  (*commaPos == '"'))
+		{
+			commaPos++;
+		}
+
+		while ((*commaPos != '\0') &&
+			   (*commaPos != '"') &&
+			   (*commaPos != '\n'))
+		{
+			if (*commaPos == ',')
+			{
+				printf("Err on line %d invalid comman in struct string\n", getCurrentLineNumber());
+				break;
+			}
+
+			/* Skip spaces*/
+			if (*commaPos != ' ')
+			{
+				addData(*commaPos);
+			}
+			
+			commaPos++;
+		}
+
+
+	}
 }
 
 /******************************************************************************
