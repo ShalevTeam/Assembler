@@ -23,7 +23,7 @@ int getCurrentLineNumber();
 void setCurrentLineNumber(lineNumber);
 ESucsessFail addEntryElemet(unsigned short address, char const* tagName);
 ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType);
-ESucsessFail addData(unsigned short val);
+ESucsessFail addData(short val);
 ESucsessFail addExternElemet(char const* tagName);
 ESucsessFail addCodeElemet(SCodeinfo codeInfo);
 

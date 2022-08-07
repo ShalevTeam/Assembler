@@ -1,6 +1,9 @@
 #include "FirstScanHandler.h"
 #include "databaseHandler.h"
 
+/* Our machine memory can't hold bigger numbers*/
+#define MAX_NUMBER_DIGITS  10
+
 /* Private members*/
 static char const* m_operandPosPtr = NULL; // Pointer to the operands of a command
 
@@ -16,6 +19,7 @@ static ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressi
 static ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo);
 static ESucsessFail handleStringCmnd(char const* line);
 static ESucsessFail handleStructCmnd(char const* line);
+static ESucsessFail handleDataCmnd(char const* line);
 static ESucsessFail generateCodeForTag(SCodeinfo* pCodeInfo);
 static ESucsessFail isNumberOfOperandsValid(int operandNum,ECodeCmnd cmnd);
 static ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd);
@@ -643,9 +647,6 @@ ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo)
 *******************************************************************************/
 ESucsessFail handleStructCmnd(char const* line)
 {
-	/* Our memory can hold bigger numbers*/
-	#define MAX_NUMBER_DIGITS  10
-
 	/* Find the comma position*/
 	char* commaPos = strchr(m_operandPosPtr, ',');
 	char Value[MAX_NUMBER_DIGITS];
@@ -701,6 +702,94 @@ ESucsessFail handleStructCmnd(char const* line)
 }
 
 /******************************************************************************
+* Function : handleDataCmnd()
+*
+*  This function handles ".data" instruction and alocate it
+*
+* \param
+*  char const* line, INPUT: a pointer to line which contains the ".string" instruction
+*
+*
+* \return
+*  ESucsessFail: eSucsess if the ".data" was allocated correctly
+*
+*******************************************************************************/
+ESucsessFail handleDataCmnd(char const* line)
+{
+	ESucsessFail res = eSucsess;
+	char const* strtPos = m_operandPosPtr;
+	char const* endPos = m_operandPosPtr;
+	char Value[MAX_NUMBER_DIGITS];
+
+	/* Run until the end of line*/
+	while ((*endPos != '\n') &&
+		   (*endPos != '\0'))
+	{
+		/* Ignore leading spaces*/
+		while (*strtPos == ' ')
+		{
+			strtPos++;
+
+			endPos = strtPos;
+		}
+
+		/* Serach for coma*/
+		endPos = strchr(strtPos, ',');
+
+		if (endPos == NULL)
+		{
+			/* Serch for end space*/
+			endPos = strchr(strtPos, ' ');
+
+			if (endPos == NULL)
+			{
+				/* Serch for end of line*/
+				endPos = strchr(strtPos, '\n');
+				if (endPos == NULL)
+				{
+					endPos = strchr(strtPos, '\0');
+
+					if (endPos == strtPos)
+					{
+						printf("\nErr on line %d invalid .data\n", getCurrentLineNumber());
+					}
+					else
+					{
+						strncpy(Value, strtPos, endPos - strtPos);
+						Value[endPos - strtPos] = '\0';
+						addData(atoi(Value));
+					}
+				}
+				else
+				{
+					strncpy(Value, strtPos, endPos - strtPos);
+					Value[endPos - strtPos] = '\0';
+					addData(atoi(Value));
+				}
+			}
+			else
+			{
+				strncpy(Value, strtPos, endPos - strtPos);
+				Value[endPos - strtPos] = '\0';
+				addData(atoi(Value));
+			}
+
+			break;
+		}
+		else /* Comma found*/
+		{
+			strncpy(Value, strtPos, endPos - strtPos);
+			Value[endPos - strtPos] = '\0';
+			addData(atoi(Value));
+			strtPos = endPos + 1;
+		}
+	}
+
+
+
+	return res;
+}
+/******************************************************************************
 * Function : handleStringCmnd()
 *
 *  This function handles ".string" instruction and alocate it
@@ -716,21 +805,30 @@ ESucsessFail handleStructCmnd(char const* line)
 ESucsessFail handleStringCmnd(char const* line)
 {
 	ESucsessFail res = eSucsess;
-	char const* strPos = strstr(line,".string");
+	char const* strPos = strstr(line, ".string");
+	int lineLen = strlen(line);
 	int Pos = 0;
 
 	if (strPos != NULL)
 	{
 		strPos += strlen(".string");
 
-		while (*(strPos+ Pos) != '\0')
+		/* Ignore leading spaces and \" */
+		while ((*strPos == ' ') ||
+			(*strPos == '\"'))
+		{
+			strPos++;
+		}
+
+		/* Run to end of string */
+		while ((strPos[Pos] != '\"') &&
+			   (strPos[Pos] != '\n') &&
+			   (strPos[Pos] != '\0'))
 		{
 			addData(strPos[Pos]);
 
 			Pos++;
 		}
-
-		addData(0);
 	}
 	else
 	{
@@ -986,6 +1084,7 @@ ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
 		handleStructCmnd(line);
 		break;
 	case eDataCmnd:
+		handleDataCmnd(line);
 		break;
 	case eNoDataCmnd:
 		res = eFail;

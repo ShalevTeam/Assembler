@@ -7,7 +7,7 @@ static int m_lineNumber = 0;
 SExternElement* m_externList = NULL; // List of all extern and there use
 STagParams* m_dataTagList = NULL; // list of all defined TAG in the code
 SCodeElement* m_codeList = NULL; // The code that was generated
-unsigned short* m_pDataSeqtion = NULL; // The data seq
+short* m_pDataSeqtion = NULL; // The data seq
 static int m_codePos = CODE_INITIAL_ADDR;
 static int m_dataPos = CODE_INITIAL_ADDR;
 static int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
@@ -432,14 +432,14 @@ ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType tagTy
 *
 *
 * \param
-*  unsigned short val, INPUT: The value to add
+*  short val, INPUT: The value to add
 *  
 *
 * \return
 *  ESucsessFail: eSucsess if added OK
 *
 *******************************************************************************/
-ESucsessFail addData(unsigned short val)
+ESucsessFail addData(short val)
 {
 	ESucsessFail res = eSucsess;
 

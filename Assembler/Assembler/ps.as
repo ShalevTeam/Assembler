@@ -11,7 +11,7 @@ inc K
 mov S1.2, r3
 bne L3
 END: hlt
-STR: .string "abcdef"
-LENGTH: .data 6,-9,15
+STR: .string "abcdef"              
+LENGTH: .data 6  ,-9 ,15    
 K: .data 22
 S1: .struct                8, "ab"
