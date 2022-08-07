@@ -16,7 +16,7 @@ SEntryElement* getEntryList();
 SExternElement* getExternalList();
 STagParams* getTagList();
 SCodeElement* getCodeList();
-unsigned short* getDataArray();
+ScodeWord* getDataArray();
 int getCurrentLineNumber();
 
 /* Seters*/

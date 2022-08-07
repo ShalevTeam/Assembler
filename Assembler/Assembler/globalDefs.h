@@ -122,6 +122,10 @@ typedef struct SOperandValWordbits
 	short val : 8;  /* value*/
 }SOperandValWordbits;
 
+typedef union SDataVal
+{
+	short val : 10;
+}SDataVal;
 
 typedef struct ScmndWordVal
 {
@@ -131,6 +135,7 @@ typedef struct ScmndWordVal
 
 typedef union ScodeWord
 {
+	SDataVal            dataVal;
 	SOperandRegWordbits regBits;
 	SOperandValWordbits valBits;
 	ScmndWordbits cmndBits;

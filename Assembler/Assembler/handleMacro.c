@@ -1,4 +1,5 @@
 #include "handleMacro.h"
+#include "databaseHandler.h"
 
 //Local macros
 #define FILE_SIZE_FACTOR  5

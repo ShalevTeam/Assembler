@@ -7,7 +7,7 @@ static int m_lineNumber = 0;
 SExternElement* m_externList = NULL; // List of all extern and there use
 STagParams* m_dataTagList = NULL; // list of all defined TAG in the code
 SCodeElement* m_codeList = NULL; // The code that was generated
-short* m_pDataSeqtion = NULL; // The data seq
+ScodeWord* m_pDataSeqtion = NULL; // The data seq
 static int m_codePos = CODE_INITIAL_ADDR;
 static int m_dataPos = CODE_INITIAL_ADDR;
 static int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
@@ -102,7 +102,7 @@ ESucsessFail initDataBase()
 		free(m_pDataSeqtion);
 	}
 
-	m_pDataSeqtion = malloc(sizeof(unsigned short) * m_maxDataLength);
+	m_pDataSeqtion = malloc(sizeof(ScodeWord) * m_maxDataLength);
 
 	if (m_pDataSeqtion == NULL)
 	{
@@ -210,7 +210,7 @@ SCodeElement* getCodeList()
 *  unsigned short*: A pointer to the data segment array
 *
 *******************************************************************************/
-unsigned short* getDataArray()
+ScodeWord* getDataArray()
 {
 	return m_pDataSeqtion;
 }
@@ -445,7 +445,7 @@ ESucsessFail addData(short val)
 
 	if (m_dataPos >= m_maxDataLength)
 	{
-		m_maxDataLength = reallocAndCopyBuffer(&m_pDataSeqtion, m_maxDataLength * sizeof(unsigned short));
+		m_maxDataLength = reallocAndCopyBuffer(&m_pDataSeqtion, m_maxDataLength * sizeof(ScodeWord));
 	}
 
 	if (m_maxDataLength == 0)
@@ -454,7 +454,7 @@ ESucsessFail addData(short val)
 	}
 	else
 	{
-		m_pDataSeqtion[m_dataPos] = val;
+		m_pDataSeqtion[m_dataPos].dataVal.val = val;
 		m_dataPos++;
 	}
 
