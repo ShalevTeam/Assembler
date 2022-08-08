@@ -20,7 +20,6 @@ static ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo);
 static ESucsessFail handleStringCmnd(char const* line);
 static ESucsessFail handleStructCmnd(char const* line);
 static ESucsessFail handleDataCmnd(char const* line);
-static ESucsessFail generateCodeForTag(SCodeinfo* pCodeInfo);
 static ESucsessFail isNumberOfOperandsValid(int operandNum,ECodeCmnd cmnd);
 static ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd);
 static ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd);
@@ -558,6 +557,17 @@ ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressingParam
 	case eDirectaddr: //Tag
 
 		tagName = pAddrParams->directaddrParams.tagName;
+		pCodeInfo->tag = malloc(strlen(tagName) + 1);
+
+		if (pCodeInfo->tag == NULL)
+		{
+			printf("Err on line %d Allocation failed\n", getCurrentLineNumber());
+		}
+		else
+		{
+			strcpy(pCodeInfo->tag, tagName);
+			pCodeInfo->Status = eWaitForTag;
+		}
 		
 		break;
 
@@ -845,49 +855,6 @@ ESucsessFail handleStringCmnd(char const* line)
 	return res;
 }
 
-/******************************************************************************
-* Function : generateCodeForTag()
-*
-*  This function generate code information for a TAG
-*
-* \param
-*  SCodeinfo* pCodeInfo, INPUT/OUPUT: a pointer to the code info to be set
-*
-*
-* \return
-*  ESucsessFail: eSucsess if the code was set correctly
-*
-*******************************************************************************/
-ESucsessFail generateCodeForTag(SCodeinfo* pCodeInfo)
-{
-	ESucsessFail res = eSucsess;
-	ESucsessFail isExternalTag = eSucsess;
-	short tagAddr = 0;
-
-	// Check if tag exist
-	if (istagExist(pCodeInfo->tag, &isExternalTag, &tagAddr))
-	{
-		if (isExternalTag)
-		{
-			pCodeInfo->code.valBits.are = eAreExternal;
-			pCodeInfo->code.valBits.val = 0;
-			addExternElemet(pCodeInfo->tag);
-		}
-		else
-		{
-			pCodeInfo->code.valBits.are = eAreRelocatable;
-			pCodeInfo->code.valBits.val = tagAddr;
-			addCodeElemet(*pCodeInfo);
-		}
-	}
-	else /* Tag not exist*/
-	{
-		printf("Err tag %s used but not defined\n", pCodeInfo->tag);
-		res = eFail;
-	}
-	
-	return res;
-}
 
 /******************************************************************************
 * Function : isNumberOfOperandsValid()

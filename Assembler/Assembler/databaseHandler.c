@@ -764,6 +764,7 @@ ESucsessFail updateTagsBaseAddress()
 
 	STagParams* pos = m_dataTagList;
 
+	/* Update the base addrress of data tags */
 	while (pos != NULL)
 	{
 		if (pos->tagType == eDataTag)
@@ -775,4 +776,61 @@ ESucsessFail updateTagsBaseAddress()
 
 	return res;
 }
+
+/******************************************************************************
+* Function : generateCodeForTag()
+*
+*  This function generate code information for a TAG
+*
+* \param
+*  SCodeinfo* pCodeInfo, INPUT/OUPUT: a pointer to the code info to be set
+*
+*
+* \return
+*  ESucsessFail: eSucsess if the code was set correctly
+*
+*******************************************************************************/
+ESucsessFail generateCodeForTag()
+{
+	ESucsessFail res = eSucsess;
+	ESucsessFail isExternalTag = eSucsess;
+	SCodeElement* currPos = m_codeList;
+	short tagAddr = 0;
+
+	while (currPos != NULL)
+	{
+		/* Check if this code needs tag update */
+		if (currPos->codeInfo.tag == NULL)
+		{
+			/* Do nothing*/
+		}
+		else
+		{
+			// Check if tag exist
+			if (istagExist(currPos->codeInfo.tag, &isExternalTag, &tagAddr))
+			{
+				if (isExternalTag)
+				{
+					currPos->codeInfo.code.valBits.are = eAreExternal;
+					currPos->codeInfo.code.valBits.val = 0;
+					//TODO:addExternUsage(currPos->codeInfo.codeAddress);
+				}
+				else
+				{
+					currPos->codeInfo.code.valBits.are = eAreRelocatable;
+					currPos->codeInfo.code.valBits.val = tagAddr;
+				}
+			}
+			else /* Tag not exist*/
+			{
+				printf("Err tag %s used but not defined\n", currPos->codeInfo.tag);
+				res = eFail;
+			}
+		}
+
+		currPos = currPos->nextEelement;
+	}
+	return res;
+}
+
 
