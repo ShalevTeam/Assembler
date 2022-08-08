@@ -127,6 +127,11 @@ typedef union SDataVal
 	short val : 10;
 }SDataVal;
 
+typedef union SAddrressVal
+{
+	unsigned short val : 10;
+}SAddrressVal;
+
 typedef struct ScmndWordVal
 {
 	unsigned short lsb : 5;
@@ -135,6 +140,7 @@ typedef struct ScmndWordVal
 
 typedef union ScodeWord
 {
+	SAddrressVal        addrVal;
 	SDataVal            dataVal;
 	SOperandRegWordbits regBits;
 	SOperandValWordbits valBits;

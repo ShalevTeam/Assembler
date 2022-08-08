@@ -3,6 +3,7 @@
 #include "databaseHandler.h"
 #include "handleMacro.h"
 #include "FirstScanHandler.h"
+#include "SecondScanHandler.h"
 
 // private function declerations
 static void processFile(char* fileName);
@@ -121,6 +122,15 @@ void processFile(char* fileName)
                 if (doFirstFileScan(postProccesData))
                 {
                     printf("\ndone first file scan for %s\n", fileName); 
+
+                    if (doSecondFileScan())
+                    {
+                        printf("\ndone second file scan for %s\n", fileName);
+                    }
+                    else
+                    {
+                        printf("fail on second file scan for %s\n", fileName);
+                    }
                 }
                 else
                 {

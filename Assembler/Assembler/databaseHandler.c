@@ -9,7 +9,7 @@ STagParams* m_dataTagList = NULL; // list of all defined TAG in the code
 SCodeElement* m_codeList = NULL; // The code that was generated
 ScodeWord* m_pDataSeqtion = NULL; // The data seq
 static int m_codePos = CODE_INITIAL_ADDR;
-static int m_dataPos = CODE_INITIAL_ADDR;
+static int m_dataPos = 0;
 static int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
 
 /******************************************************************************
@@ -110,7 +110,7 @@ ESucsessFail initDataBase()
 	}
 
 	m_codePos = CODE_INITIAL_ADDR;
-	m_dataPos = CODE_INITIAL_ADDR;
+	m_dataPos = 0;
 
 	return res;
 }
@@ -386,11 +386,11 @@ ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType tagTy
 
 		if (tagType == eCodeTag)
 		{
-			newElem->tagAddr.valBits.val = m_codePos;
+			newElem->tagAddr.addrVal.val = m_codePos;
 		}
 		else
 		{
-			newElem->tagAddr.valBits.val = m_dataPos;
+			newElem->tagAddr.addrVal.val = m_dataPos;
 		}
 		
 		newElem->tagType = tagType;
@@ -695,7 +695,7 @@ ESucsessFail istagExist(char const* tag, ESucsessFail* pIsExternalTag, short* pT
 		if (strcmp(pCurrPosTagList->tagName, tag) == 0)
 		{
 			*pIsExternalTag = eFail;
-			*pTagAddr = pCurrPosTagList->tagAddr.valBits.val;
+			*pTagAddr = pCurrPosTagList->tagAddr.addrVal.val;
 			res = eSucsess;
 			return res;
 		}
@@ -743,5 +743,36 @@ int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 	}
 
 	return newSize;
+}
+
+/******************************************************************************
+* Function : updateTagsBaseAddress()
+*
+*  This function scans the tags list and update the base addrress of data tags
+*  
+*
+* \param
+*  None.
+*
+* \return
+*  ESucsessFail eSucsess if update Sucsessfully
+*
+*******************************************************************************/
+ESucsessFail updateTagsBaseAddress()
+{
+	ESucsessFail res = eSucsess;
+
+	STagParams* pos = m_dataTagList;
+
+	while (pos != NULL)
+	{
+		if (pos->tagType == eDataTag)
+		{
+			pos->tagAddr.addrVal.val += m_codePos;
+		}
+		pos = pos->nextEelement;
+	}
+
+	return res;
 }
 

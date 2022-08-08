@@ -836,6 +836,12 @@ ESucsessFail handleStringCmnd(char const* line)
 		res = eFail;
 	}
 
+	/* Add the string \0 */
+	if (res)
+	{
+		addData(0);
+	}
+
 	return res;
 }
 
