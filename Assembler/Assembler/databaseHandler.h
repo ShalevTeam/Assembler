@@ -21,7 +21,7 @@ int getCurrentLineNumber();
 
 /* Seters*/
 void setCurrentLineNumber(lineNumber);
-ESucsessFail addEntryElemet(unsigned short address, char const* tagName);
+ESucsessFail addEntryElemet(char const* tagName);
 ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType);
 ESucsessFail addData(short val);
 ESucsessFail addExternElemet(char const* tagName);

@@ -270,7 +270,7 @@ void setCurrentLineNumber(int lineNumber)
 *  ESucsessFail: eSucsess if added OK
 *
 *******************************************************************************/
-ESucsessFail addEntryElemet(unsigned short address, char const* tagName)
+ESucsessFail addEntryElemet(char const* tagName)
 {
 	ESucsessFail res = eSucsess;
 
@@ -298,7 +298,6 @@ ESucsessFail addEntryElemet(unsigned short address, char const* tagName)
 			prev->nextEelement = newElem;
 		}
 
-		newElem->address.valBits.val = address;
 		newElem->nextEelement = NULL;
 
 		if (tagName)
@@ -317,7 +316,7 @@ ESucsessFail addEntryElemet(unsigned short address, char const* tagName)
 		}
 		else
 		{
-			newElem->tagName = NULL;
+			printf("Err on line %d internal err invalid entry\n", m_lineNumber);
 		}
 	}
 	else
@@ -599,6 +598,8 @@ ESucsessFail addCodeElemet(SCodeinfo codeInfo)
 	SCodeElement* latest = m_codeList;
 	SCodeElement* prev = m_codeList;
 
+	codeInfo.codeAddress.val = m_codePos;
+
 	// Find the latest element
 	while (latest != NULL)
 	{
@@ -813,7 +814,7 @@ ESucsessFail generateCodeForTag()
 				{
 					currPos->codeInfo.code.valBits.are = eAreExternal;
 					currPos->codeInfo.code.valBits.val = 0;
-					//TODO:addExternUsage(currPos->codeInfo.codeAddress);
+					/*addExternUsage(*/currPos->codeInfo.codeAddress;//);
 				}
 				else
 				{

@@ -127,16 +127,17 @@ typedef union SDataVal
 	short val : 10;
 }SDataVal;
 
-typedef union SAddrressVal
-{
-	unsigned short val : 10;
-}SAddrressVal;
-
 typedef struct ScmndWordVal
 {
 	unsigned short lsb : 5;
 	unsigned short msb : 5;
 }ScmndWordVal;
+
+typedef union SAddrressVal
+{
+	ScmndWordVal decodedVal;
+	unsigned short val : 10;
+}SAddrressVal;
 
 typedef union ScodeWord
 {
@@ -150,6 +151,7 @@ typedef union ScodeWord
 
 typedef struct SCodeinfo
 {
+	SAddrressVal codeAddress;
 	ScodeWord code;
 	ECodeStatus Status;
 	char* tag; // Tag which need to be translate to code

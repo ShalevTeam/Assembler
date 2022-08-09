@@ -23,7 +23,9 @@ static ESucsessFail handleDataCmnd(char const* line);
 static ESucsessFail isNumberOfOperandsValid(int operandNum,ECodeCmnd cmnd);
 static ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd);
 static ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd);
+static ESucsessFail  handleInstructionLine(char const* line, EInstructionCmnd cmd);
 static char* readLine(char* startPos, char* line);
+static char* removeSpaces(char const* startPos);
 static ELineType getLineType(char const* line, int* additionalInfo);
 static ESucsessFail analizeLine(int lineNumber, char const* line);
 static int setOperandsString(SOperandAdressingParams cmndOperandsArray[]);
@@ -78,6 +80,57 @@ char* readLine(char* startPos, char* line)
 	}
 
 	return newStartPos;
+}
+
+/******************************************************************************
+* Function : removeSpaces()
+*
+*  This function is removes all spaces before and after a string
+*  and return a clean string
+*
+* \param
+*  char const* startPos:	INPUT:  The string to clean
+*
+* \return
+*  char*: A new string without spaces
+*
+*******************************************************************************/
+char* removeSpaces(char const* startPos)
+{
+	char const* start = startPos;
+	char const* end = NULL;
+	char* newString = startPos;
+
+	/*Clear all spaces from the string start Pos*/
+	while (*start == ' ')
+	{
+		start++;
+	}
+
+	end = start;
+
+	/* Find the end of string*/
+	while ((*end != ' ') &&
+		   (*end != '\n') &&
+		   (*end != '\0') )
+	{
+		end++;
+	}
+
+	newString = malloc(end - start + 1);
+
+	if (newString != NULL)
+	{
+		strncpy(newString, start, end - start);
+
+		newString[end - start] = '\0';
+	}
+	else
+	{
+		printf("Err on line %d allocation failed on 'removeSpaces' \n", getCurrentLineNumber());
+	}
+	
+	return newString;
 }
 
 /******************************************************************************
@@ -657,6 +710,8 @@ ESucsessFail freeAndResetCodeInfo(SCodeinfo* pCodeInfo)
 *******************************************************************************/
 ESucsessFail handleStructCmnd(char const* line)
 {
+	ESucsessFail res = eSucsess;
+
 	/* Find the comma position*/
 	char* commaPos = strchr(m_operandPosPtr, ',');
 	char Value[MAX_NUMBER_DIGITS];
@@ -706,9 +761,9 @@ ESucsessFail handleStructCmnd(char const* line)
 			
 			commaPos++;
 		}
-
-
 	}
+
+	return res;
 }
 
 /******************************************************************************
@@ -1030,6 +1085,77 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 }
 
 /******************************************************************************
+* Function : handleInstructionLine()
+*
+*  This function handles an instruction line .external or .entry and ignore tags
+* \param
+*  char const* line, INPUT: the code line to be handled
+*  EInstructionCmnd cmnd, INPUT: the data type
+*
+*
+* \return
+*  ESucsessFail: eSucsess if the line was handled correctly
+*
+*******************************************************************************/
+ESucsessFail  handleInstructionLine(char const* line, EInstructionCmnd cmd)
+{
+	ESucsessFail res = eSucsess;
+	char* strtPos = strstr(line, ".");
+	char* endPos = NULL;
+
+	if (strtPos != NULL)
+	{
+		switch (cmd)
+		{
+		case eNoInstructionCmnd:
+			printf("Err on line %d internal err unexpected command \n", getCurrentLineNumber());
+			res = eFail;
+			break;
+		case eExternInstruction:
+			strtPos += strlen(".extern");
+
+			strtPos = removeSpaces(strtPos);
+
+			if (strtPos != NULL)
+			{
+				addExternElemet(strtPos);
+
+				free(strtPos);
+			}
+			else
+			{
+				printf("Err on line %d Fail to end entry \n", getCurrentLineNumber());
+				res = eFail;
+			}
+
+			break;
+		case eEntryInstruction:
+			strtPos += strlen(".entry");
+			strtPos = removeSpaces(strtPos);
+
+			if (strtPos != NULL)
+			{
+				addEntryElemet(strtPos);
+
+				free(strtPos);
+			}
+			else
+			{
+				printf("Err on line %d Fail to end entry \n", getCurrentLineNumber());
+				res = eFail;
+			}
+
+			break;
+		}
+	}
+	else
+	{
+		printf("Err on line %d internal err instruction line format\n", getCurrentLineNumber());
+	}
+	return res;
+}
+
+/******************************************************************************
 * Function : handleDataLine()
 *
 *  This function handles a data line and writes all its data to the data array
@@ -1061,6 +1187,7 @@ ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
 		break;
 	case eNoDataCmnd:
 		res = eFail;
+		printf("Err on line %d internal err unexpected command \n", getCurrentLineNumber());
 		break;
 	}
 
@@ -1190,21 +1317,22 @@ ESucsessFail analizeLine(int lineNumber, char const* line)
 	// First we chek the line type
 	ELineType lineType = getLineType(line, &additionalInfo);
 
-	if (lineType == eLineUndefine)
+	switch (lineType)
 	{
+	case eDataLine:
+		res = handleDataLine(line, (EDataCmnd)additionalInfo);
+		break;
+
+	case eCodeLine:
+		res = handleCodeLine(line, (ECodeCmnd)additionalInfo);
+		break;
+
+	case eInstructionLine:
+		res = handleInstructionLine(line,(EInstructionCmnd)additionalInfo);
+		break;
+	case eLineUndefine:
 		printf("empty line\n");
-	}
-
-	if (lineType == eCodeLine)
-	{
-		ECodeCmnd cmnd = (ECodeCmnd)additionalInfo;
-
-		res = handleCodeLine(line, cmnd);
-	}
-	else if (lineType == eDataLine)
-	{
-		EDataCmnd cmnd = (EDataCmnd)additionalInfo;
-		res = handleDataLine(line, cmnd);
+		break;
 	}
 
 	return res;
