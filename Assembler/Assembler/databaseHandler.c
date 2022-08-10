@@ -488,93 +488,52 @@ ESucsessFail addExternElemet(char const* tagName)
 		{
 			// Tag found
 			tagFound = eSucsess;
+			break;
+		}
 
-			// Find the latest at the use list
-			SAddressElement* addrcurr = latest->externUseAddrList;
-			SAddressElement* addrprev = latest->externUseAddrList;
-			while (addrcurr != NULL)
+		prev = latest;
+		latest = latest->nextEelement;
+	}
+
+	if (!tagFound)
+	{
+		latest = malloc(sizeof(SExternElement));
+
+		if (latest)
+		{
+			latest->externUseAddrList = NULL;
+
+			latest->tagName = malloc(strlen(tagName)+1);
+
+			if (latest->tagName)
 			{
-				addrprev = addrcurr;
-				addrcurr = addrcurr->nextEelement;
-			}
+				strcpy(latest->tagName, tagName);
 
-			if (addrprev == NULL)
-			{
-				printf("Err on line %d unexpected null pointer\n", m_lineNumber);
-				res = eFail;
-				return res;
-			}
+				if (m_externList == NULL)
+				{
+					m_externList = latest;
+				}
 
-			// Set the new element
-			addrprev->nextEelement = malloc(sizeof(SAddressElement));
+				if (prev != NULL)
+				{
+					prev->nextEelement = latest;
+				}
 
-			if (addrprev->nextEelement)
-			{
-				((SAddressElement*)addrprev->nextEelement)->address.valBits.val = m_codePos;
-				((SAddressElement*)addrprev->nextEelement)->nextEelement = NULL;
-				return res;
+				latest->nextEelement = NULL;
 			}
 			else
 			{
 				printf("Err on line %d memory alloc fail\n", m_lineNumber);
 				res = eFail;
-				return res;
 			}
-
-		}
-
-		latest = latest->nextEelement;
-	}
-
-	SExternElement* newElem = malloc(sizeof(SExternElement));
-
-	if (m_externList == NULL)
-	{
-		m_externList = newElem;
-	}
-
-	if (newElem)
-	{
-		if (prev != NULL)
-		{
-			prev->nextEelement = newElem;
-		}
-
-		newElem->nextEelement = NULL;
-		// If we got here -> Generate new SExternElement element
-		newElem->tagName = malloc(strlen(tagName) + 1);
-		if (newElem->tagName)
-		{
-			strcpy(newElem->tagName, tagName);
-			newElem->nextEelement = NULL;
+			
 		}
 		else
 		{
 			printf("Err on line %d memory alloc fail\n", m_lineNumber);
 			res = eFail;
-			return res;
-		}
-
-		newElem->externUseAddrList = malloc(sizeof(SAddressElement));
-		if (newElem->externUseAddrList)
-		{
-			((SAddressElement*)newElem->externUseAddrList)->address.valBits.val = m_codePos;
-			((SAddressElement*)newElem->externUseAddrList)->nextEelement = NULL;
-
-		}
-		else
-		{
-			printf("Err on line %d memory alloc fail\n", m_lineNumber);
-			res = eFail;
-			return res;
 		}
 	}
-	else
-	{
-		printf("Err on line %d memory alloc fail\n", m_lineNumber);
-		res = eFail;
-	}
-
 	return res;
 }
 
@@ -652,6 +611,90 @@ ESucsessFail addCodeElemet(SCodeinfo codeInfo)
 		m_codePos++;
 	}
 
+	return res;
+}
+
+/******************************************************************************
+* Function : addExternUsage()
+*
+*  This function sets usage addrress for an external tag
+*
+*
+* \param
+*  SCodeinfo codeInfo, INPUT: The code addrress and tag
+*
+* \return
+*  ESucsessFail: eSucsess if sets OK
+*
+*******************************************************************************/
+ESucsessFail addExternUsage(SCodeinfo codeInfo)
+{
+	ESucsessFail res = eFail;
+	SExternElement* curPosOnExternalList = m_externList;
+	SAddressElement* addrPtr = NULL;
+	SAddressElement* prevAddrPtr = NULL;
+	
+	if (m_externList == NULL)
+	{
+		printf("Err on line %d Using external which is not defined\n", getCurrentLineNumber());
+	}
+
+	/* Go ever the external list*/
+	while(curPosOnExternalList != NULL)
+	{
+		/*Search for the tag in the external list*/
+		if (strcmp(codeInfo.tag, curPosOnExternalList->tagName) == 0)
+		{
+			/* get the addrress list*/
+			addrPtr = curPosOnExternalList->externUseAddrList;
+
+			/* Handle the first element in the addrress list*/
+			if (addrPtr == NULL)
+			{
+				/* Alloc the addrress list */
+				curPosOnExternalList->externUseAddrList = malloc(sizeof(curPosOnExternalList->externUseAddrList));
+
+				/* Set the addrress element fields*/
+				if (curPosOnExternalList->externUseAddrList)
+				{
+					curPosOnExternalList->externUseAddrList->address = codeInfo.codeAddress;
+					curPosOnExternalList->externUseAddrList->nextEelement = NULL;
+					res = eSucsess;
+				}
+				else
+				{
+					printf("internal err Cant alloc external adress\n");
+				}
+			}
+			else /* Not first element in the addrress list*/
+			{
+				/* Find the last addrress*/
+				while (addrPtr != NULL)
+				{
+					prevAddrPtr = addrPtr;
+					addrPtr = addrPtr->nextEelement;
+				}
+
+				addrPtr = malloc(sizeof(*addrPtr));
+
+				/* Set fields to the new addrress element*/
+				if (addrPtr)
+				{
+					addrPtr->nextEelement = NULL;
+					addrPtr->address = codeInfo.codeAddress;
+					prevAddrPtr->nextEelement = addrPtr;
+					res = eSucsess;
+				}
+				else
+				{
+					printf("internal err Cant alloc external adress\n");
+				}
+			}
+		}
+
+		curPosOnExternalList = curPosOnExternalList->nextEelement;
+	}
+	
 	return res;
 }
 
@@ -814,7 +857,7 @@ ESucsessFail generateCodeForTag()
 				{
 					currPos->codeInfo.code.valBits.are = eAreExternal;
 					currPos->codeInfo.code.valBits.val = 0;
-					/*addExternUsage(*/currPos->codeInfo.codeAddress;//);
+					addExternUsage(currPos->codeInfo);
 				}
 				else
 				{

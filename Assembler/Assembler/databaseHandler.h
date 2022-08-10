@@ -26,6 +26,7 @@ ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType);
 ESucsessFail addData(short val);
 ESucsessFail addExternElemet(char const* tagName);
 ESucsessFail addCodeElemet(SCodeinfo codeInfo);
+ESucsessFail addExternUsage(SCodeinfo codeInfo);
 
 /* Services*/
 ESucsessFail initDataBase();

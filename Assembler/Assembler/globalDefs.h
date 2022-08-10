@@ -164,13 +164,6 @@ typedef struct SCodeElement
 	struct SCodeElement* nextEelement;
 }SCodeElement;
 
-struct SAddressElement;
-typedef struct SAddressElement
-{
-	ScodeWord address;
-	struct SAddressElement* nextEelement;
-}SAddressElement;
-
 struct STagParams;
 typedef struct STagParams
 {
@@ -179,6 +172,13 @@ typedef struct STagParams
 	EtagType tagType;
 	struct STagParams* nextEelement;
 }STagParams;
+
+struct SAddressElement;
+typedef struct SAddressElement
+{
+	SAddrressVal address;
+	struct SAddressElement* nextEelement;
+}SAddressElement;
 
 struct SExternElement;
 typedef struct SExternElement
@@ -195,13 +195,11 @@ typedef struct SEntryElement
 	struct SEntryElement* nextEelement;
 }SEntryElement;
 
-
 typedef struct SCommandsParams
 {
 	char const* cmndString;
 	int numOfOperands;
 }SCommandsParams;
-
 
 typedef struct SEmmediateAddrParams
 {

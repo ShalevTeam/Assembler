@@ -99,7 +99,7 @@ char* removeSpaces(char const* startPos)
 {
 	char const* start = startPos;
 	char const* end = NULL;
-	char* newString = startPos;
+	char* newString = NULL;
 
 	/*Clear all spaces from the string start Pos*/
 	while (*start == ' ')
