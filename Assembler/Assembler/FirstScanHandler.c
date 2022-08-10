@@ -157,7 +157,7 @@ ELineType getLineType(char const* line, int* additionalInfo)
 	/* Reset the operands pointer before analizing a line */
 	m_operandPosPtr = NULL;
 
-	if (isWordExistInLine(line, ";"))
+	if (line[0] == ';')
 	{
 		lineType = eRemarkLine;
 	}
