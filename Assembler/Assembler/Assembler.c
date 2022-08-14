@@ -4,6 +4,7 @@
 #include "handleMacro.h"
 #include "FirstScanHandler.h"
 #include "SecondScanHandler.h"
+#include "generator.h"
 
 // private function declerations
 static void processFile(char* fileName);
@@ -88,7 +89,7 @@ void processFile(char* fileName)
     /* Allocate buffer for data read*/
     char* rawCodeData = malloc(fileSize);
 
-    if (file)
+    if (file && (fileSize>0))
     {
         if (rawCodeData)
         {
@@ -103,7 +104,10 @@ void processFile(char* fileName)
                 }
                 else
                 {
-                    rawCodeData[filePos] = (char)fileData;
+                    if (filePos < fileSize)
+                    {
+                        rawCodeData[filePos] = (char)fileData;
+                    }
                 }
                 
                 filePos++;
@@ -126,6 +130,15 @@ void processFile(char* fileName)
                     if (doSecondFileScan())
                     {
                         printf("\ndone second file scan for %s\n", fileName);
+
+                        if (generateCodeFile())
+                        {
+
+                        }
+                        else
+                        {
+                            printf("fail on second file scan for %s\n", fileName);
+                        }
                     }
                     else
                     {

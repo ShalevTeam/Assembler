@@ -22,12 +22,14 @@
     <ClCompile Include="Assembler.c" />
     <ClCompile Include="databaseHandler.c" />
     <ClCompile Include="FirstScanHandler.c" />
+    <ClCompile Include="generator.c" />
     <ClCompile Include="handleMacro.c" />
     <ClCompile Include="SecondScanHandler.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="databaseHandler.h" />
     <ClInclude Include="FirstScanHandler.h" />
+    <ClInclude Include="generator.h" />
     <ClInclude Include="globalDefs.h" />
     <ClInclude Include="handleMacro.h" />
     <ClInclude Include="SecondScanHandler.h" />

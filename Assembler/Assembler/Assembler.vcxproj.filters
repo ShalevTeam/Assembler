@@ -30,6 +30,9 @@
     <ClCompile Include="SecondScanHandler.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="generator.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="handleMacro.h">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="SecondScanHandler.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generator.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
