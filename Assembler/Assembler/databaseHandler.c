@@ -11,6 +11,10 @@ ScodeWord* m_pDataSeqtion = NULL; // The data seq
 static int m_codePos = CODE_INITIAL_ADDR;
 static int m_dataPos = 0;
 static int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
+char m_asemblerFileName[MAX_FILE_NAME];
+char m_objectFileName[MAX_FILE_NAME];
+char m_externFileName[MAX_FILE_NAME];
+char m_entryFileName[MAX_FILE_NAME];
 
 /******************************************************************************
 * Function : initDataBase()
@@ -196,6 +200,26 @@ SCodeElement* getCodeList()
 }
 
 /******************************************************************************
+* Function : getObjectFileName()
+*
+*  This function returns a pointer to a string containing the object file name
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  char*: A pointer to the object file name
+*
+*******************************************************************************/
+char* getObjectFileName()
+{
+	return m_objectFileName;
+}
+
+/******************************************************************************
 * Function : getDataArray()
 *
 *  This function returns a pointer to the data segment array
@@ -234,6 +258,46 @@ int getCurrentLineNumber()
 {
 	return m_lineNumber;
 }
+
+int getDataSize()
+{
+	return m_dataPos;
+}
+
+/******************************************************************************
+* Function : setAsemblerFileName()
+*
+*  This function sets the currently handled assembly file name
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  None.
+*
+*******************************************************************************/
+void setAsemblerFileName(char const* fileName)
+{
+	if (strlen(fileName) + strlen(".ext") < MAX_FILE_NAME)
+	{
+		strcpy(m_objectFileName, fileName);
+		strcat(m_objectFileName,".ob");
+
+		strcpy(m_externFileName, fileName);
+		strcat(m_externFileName, ".ext");
+
+		strcpy(m_entryFileName, fileName);
+		strcat(m_entryFileName, ".ent");
+	}
+	else
+	{
+		printf("internal Error - Assembler file name to long");
+	}
+}
+
 
 /******************************************************************************
 * Function : setCurrentLineNumber()

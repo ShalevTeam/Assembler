@@ -735,7 +735,7 @@ ESucsessFail handleStructCmnd(char const* line)
 
 		/* Add the struct string */
 
-		/* Ignore spaces*/
+		/* Run to the start of string */
 		commaPos++;
 		while((*commaPos == ' ') ||
 			  (*commaPos == '"'))
@@ -743,20 +743,31 @@ ESucsessFail handleStructCmnd(char const* line)
 			commaPos++;
 		}
 
+		/* Run to the end of string */
 		while ((*commaPos != '\0') &&
-			   (*commaPos != '"') &&
 			   (*commaPos != '\n'))
 		{
+
+			/* Check for ilegal characters */
 			if (*commaPos == ',')
 			{
 				printf("Err on line %d invalid comman in struct string\n", getCurrentLineNumber());
 				break;
 			}
 
-			/* Skip spaces*/
-			if (*commaPos != ' ')
+			/* End the string*/
+			if (*commaPos == '"')
 			{
-				addData(*commaPos);
+				addData(0);
+				break;
+			}
+			else
+			{
+				/* Add string data*/
+				if (*commaPos != ' ')
+				{
+					addData(*commaPos);
+				}
 			}
 			
 			commaPos++;
@@ -1019,11 +1030,12 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	/* Set the addrresing type*/
 	if (numOfOperands == 1)
 	{
-		codeinfo.code.cmndBits.srcAdr = operandAdressingParams[0].addrType;
+		codeinfo.code.cmndBits.dstAdr = operandAdressingParams[0].addrType;
 	}
 	
 	if (numOfOperands == 2)
 	{
+		codeinfo.code.cmndBits.srcAdr = operandAdressingParams[0].addrType;
 		codeinfo.code.cmndBits.dstAdr = operandAdressingParams[1].addrType;
 	}
 	

@@ -18,9 +18,12 @@ STagParams* getTagList();
 SCodeElement* getCodeList();
 ScodeWord* getDataArray();
 int getCurrentLineNumber();
+int getDataSize();
+char* getObjectFileName();
 
 /* Seters*/
 void setCurrentLineNumber(lineNumber);
+void setAsemblerFileName(char const* fileName);
 ESucsessFail addEntryElemet(char const* tagName);
 ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType);
 ESucsessFail addData(short val);

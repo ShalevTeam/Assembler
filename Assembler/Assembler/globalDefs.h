@@ -18,6 +18,8 @@
 #define MAX_LINE_LENGTH  1000
 #define CODE_INITIAL_ADDR 100
 #define MAX_OPERAND_NUM  2
+#define MAX_FILE_NAME	100
+#define MAX_OBJECTLINE_LENGTH 100
 
 
 typedef enum ESucsessFail

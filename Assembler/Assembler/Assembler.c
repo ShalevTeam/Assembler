@@ -36,6 +36,10 @@ int main(int argc, char** argv)
         {
             fullFileName[0] = '\0';   // ensures the memory is an empty string
             strcat(fullFileName, argv[i]);
+
+            /* Save the name of the currently handled file */
+            setAsemblerFileName(fullFileName);
+
             strcat(fullFileName, ".as");
 
             processFile(fullFileName);

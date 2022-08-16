@@ -1,7 +1,8 @@
 #include "generator.h"
+#include "databaseHandler.h"
 
 /* Private memebers */
-char symbolTable[] = 
+char symbolTable[] =
 {
 	'!', /*0*/
 	'@', /*1*/
@@ -35,7 +36,10 @@ char symbolTable[] =
 	't', /*29*/
 	'u', /*30*/
 	'v'	 /*31*/
-}
+};
+
+/* Private functions*/
+static ESucsessFail generateObjectsFile();
 
 /******************************************************************************
 * Function : generateCodeFile()
@@ -59,6 +63,177 @@ ESucsessFail generateCodeFile()
 {
 	ESucsessFail res = eSucsess;
 
-	//generateObjectsFile();
+	if (generateObjectsFile())
+	{
+
+	}
+	else
+	{
+		res = eFail;
+		printf("Internal err : object file generation failed\n");
+	}
+	return res;
+}
+
+/******************************************************************************
+* Function : generateObjectsFile()
+*
+*  This function generates the object file
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  ESucsessFail - eSucsess if all files were generated Sucsessfuly
+*
+*******************************************************************************/
+ESucsessFail generateObjectsFile()
+{
+	ESucsessFail res = eSucsess;
+	FILE* file = NULL;
+	int dataIdx = 0;
+	int dataSize = getDataSize();
+	char* fileName = getObjectFileName();
+	char symbol = 0;
+	char objectline[MAX_OBJECTLINE_LENGTH] = { 0, };
+	int objectLinePos = 0;
+	ScodeWord* dataArray = getDataArray();
+	SCodeElement* codelistPos = getCodeList();
+	SAddrressVal lastAddr = { 0, };
+
+	if (codelistPos == NULL)
+	{
+		res = eFail;
+		printf("Internal err:  Code list is empty\n");
+	}
+	else
+	{
+		/* Generate the output file*/
+		file = fopen(fileName, "w");
+
+		if (file != NULL)
+		{
+			/* Go over the code list*/
+			while (codelistPos != NULL)
+			{
+				lastAddr.val = codelistPos->codeInfo.codeAddress.val;
+				objectLinePos = 0;
+				if (codelistPos->codeInfo.codeAddress.decodedVal.msb < sizeof(symbolTable) / sizeof(symbolTable[0]))
+				{
+					symbol = symbolTable[codelistPos->codeInfo.codeAddress.decodedVal.msb];
+					objectline[objectLinePos++] = symbol;
+
+					if (codelistPos->codeInfo.codeAddress.decodedVal.lsb < sizeof(symbolTable) / sizeof(symbolTable[0]))
+					{
+						symbol = symbolTable[codelistPos->codeInfo.codeAddress.decodedVal.lsb];
+						objectline[objectLinePos++] = symbol;
+						objectline[objectLinePos++] = ' ';
+						objectline[objectLinePos++] = ' ';
+						objectline[objectLinePos++] = ' ';
+						objectline[objectLinePos++] = ' ';
+
+						if (codelistPos->codeInfo.code.decodeVal.msb < sizeof(symbolTable) / sizeof(symbolTable[0]))
+						{
+							symbol = symbolTable[codelistPos->codeInfo.code.decodeVal.msb];
+							objectline[objectLinePos++] = symbol;
+
+							if (codelistPos->codeInfo.code.decodeVal.lsb < sizeof(symbolTable) / sizeof(symbolTable[0]))
+							{
+								symbol = symbolTable[codelistPos->codeInfo.code.decodeVal.lsb];
+								objectline[objectLinePos++] = symbol;
+								objectline[objectLinePos++] = '\n';
+								objectline[objectLinePos++] = '\0';
+								fwrite(objectline, strlen(objectline), 1, file);
+							}
+							else
+							{
+								res = eFail;
+								printf("Internal err - Symbol index is to big\n");
+							}
+						}
+						else
+						{
+							res = eFail;
+							printf("Internal err - Symbol index is to big\n");
+						}
+					}
+					else
+					{
+						res = eFail;
+						printf("Internal err - Symbol index is to big\n");
+					}
+				}
+				else
+				{
+					res = eFail;
+					printf("Internal err - Symbol index is to big\n");
+				}
+				codelistPos = codelistPos->nextEelement;
+			}
+
+			/* Go over the data Array*/
+			for (dataIdx =0; dataIdx < dataSize; dataIdx++)
+			{
+				objectLinePos = 0;
+				lastAddr.val++;
+				if (lastAddr.decodedVal.msb < sizeof(symbolTable) / sizeof(symbolTable[0]))
+				{
+					symbol = symbolTable[lastAddr.decodedVal.msb];
+					objectline[objectLinePos++] = symbol;
+
+					if (lastAddr.decodedVal.lsb < sizeof(symbolTable) / sizeof(symbolTable[0]))
+					{
+						symbol = symbolTable[lastAddr.decodedVal.lsb];
+						objectline[objectLinePos++] = symbol;
+						objectline[objectLinePos++] = ' ';
+						objectline[objectLinePos++] = ' ';
+						objectline[objectLinePos++] = ' ';
+						objectline[objectLinePos++] = ' ';
+
+						if (dataArray[dataIdx].decodeVal.msb < sizeof(symbolTable) / sizeof(symbolTable[0]))
+						{
+							symbol = symbolTable[dataArray[dataIdx].decodeVal.msb];
+							objectline[objectLinePos++] = symbol;
+
+							if (dataArray[dataIdx].decodeVal.lsb < sizeof(symbolTable) / sizeof(symbolTable[0]))
+							{
+								symbol = symbolTable[dataArray[dataIdx].decodeVal.lsb];
+								objectline[objectLinePos++] = symbol;
+								objectline[objectLinePos++] = '\n';
+								objectline[objectLinePos++] = '\0';
+								fwrite(objectline, strlen(objectline), 1, file);
+							}
+							else
+							{
+								res = eFail;
+								printf("Internal err - Symbol index is to big\n");
+							}
+						}
+						else
+						{
+							res = eFail;
+							printf("Internal err - Symbol index is to big\n");
+						}
+					}
+					else
+					{
+						res = eFail;
+						printf("Internal err - Symbol index is to big\n");
+					}
+				}
+				else
+				{
+					res = eFail;
+					printf("Internal err - Symbol index is to big\n");
+				}
+			}
+
+			fclose(file);
+		}
+	}
+
 	return res;
 }
