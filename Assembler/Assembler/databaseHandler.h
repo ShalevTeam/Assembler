@@ -20,6 +20,7 @@ ScodeWord* getDataArray();
 int getCurrentLineNumber();
 int getDataSize();
 char* getObjectFileName();
+char* getEntryFileName();
 
 /* Seters*/
 void setCurrentLineNumber(lineNumber);
@@ -36,6 +37,7 @@ ESucsessFail initDataBase();
 ESucsessFail istagExist(char const* tag, ESucsessFail* pIsExternalTag, short* pTagAddr);
 int reallocAndCopyBuffer(void** outFileData, int currSize);
 ESucsessFail updateTagsBaseAddress();
+ESucsessFail updateEntryAddress();
 ESucsessFail generateCodeForTag();
 
 #endif

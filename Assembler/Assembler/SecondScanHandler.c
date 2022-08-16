@@ -25,6 +25,9 @@ ESucsessFail doSecondFileScan()
 	/* update the code Tags base address*/
 	updateTagsBaseAddress();
 
+	/* update the entry Tags address*/
+	updateEntryAddress();
+
 	/* Update code which uses tags*/
 	generateCodeForTag();
 

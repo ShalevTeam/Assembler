@@ -65,7 +65,15 @@ ESucsessFail generateCodeFile()
 
 	if (generateObjectsFile())
 	{
-
+		if (generateEntryFile())
+		{
+	
+		}
+		else
+		{
+			res = eFail;
+			printf("Internal err : entity file generation failed\n");
+		}
 	}
 	else
 	{
@@ -75,6 +83,90 @@ ESucsessFail generateCodeFile()
 	return res;
 }
 
+/******************************************************************************
+* Function : generateEntryFile()
+*
+*  This function generates the entity file
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  ESucsessFail - eSucsess if all files were generated Sucsessfuly
+*
+*******************************************************************************/
+ESucsessFail generateEntryFile()
+{
+	ESucsessFail res = eSucsess;
+	FILE* file = NULL;
+	char* fileName = getEntryFileName();
+	SEntryElement* listPos = getEntryList();
+	char line[MAX_ENTITY_LINE_LENGTH] = { 0, };
+	int linePos = 0;
+	char symbol = 0;
+
+	if (listPos == NULL)
+	{
+		printf("Internal err:  Entry list is empty\n");
+	}
+	else
+	{
+		/* Generate the output file*/
+		file = fopen(fileName, "w");
+
+		if (file != NULL)
+		{
+			/* Go over the code list*/
+			while (listPos != NULL)
+			{
+				linePos = 0;
+
+				strcpy(line, listPos->tagName);
+				
+				linePos = strlen(listPos->tagName);
+				line[linePos++] = ' ';
+				line[linePos++] = ' ';
+				line[linePos++] = ' ';
+				line[linePos++] = ' ';
+
+				if (listPos->address.decodeVal.msb < sizeof(symbolTable) / sizeof(symbolTable[0]))
+				{
+					symbol = symbolTable[listPos->address.decodeVal.msb];
+					line[linePos++] = symbol;
+
+					if (listPos->address.decodeVal.lsb < sizeof(symbolTable) / sizeof(symbolTable[0]))
+					{
+						symbol = symbolTable[listPos->address.decodeVal.lsb];
+						line[linePos++] = symbol;
+						line[linePos++] = '\n';
+						line[linePos++] = '\0';
+						fwrite(line, strlen(line), 1, file);
+
+					}
+					else
+					{
+						res = eFail;
+						printf("Internal err - Symbol index is to big\n");
+					}
+				}
+				else
+				{
+					res = eFail;
+					printf("Internal err - Symbol index is to big\n");
+				}
+
+				listPos = listPos->nextEelement;
+			}
+
+			fclose(file);
+		}
+	}
+
+	return res;
+}
 /******************************************************************************
 * Function : generateObjectsFile()
 *

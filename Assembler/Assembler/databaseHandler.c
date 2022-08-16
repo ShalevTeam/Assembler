@@ -219,6 +219,11 @@ char* getObjectFileName()
 	return m_objectFileName;
 }
 
+char* getEntryFileName()
+{
+	return m_entryFileName;
+}
+
 /******************************************************************************
 * Function : getDataArray()
 *
@@ -851,6 +856,56 @@ int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 	}
 
 	return newSize;
+}
+
+/******************************************************************************
+* Function : updateEntryAddress()
+*
+*  This function scans the entry list and update the addrress of the tags
+*
+*
+* \param
+*  None.
+*
+* \return
+*  ESucsessFail eSucsess if update Sucsessfully
+*
+*******************************************************************************/
+ESucsessFail updateEntryAddress()
+{
+	ESucsessFail res = eSucsess;
+	ESucsessFail tagFound = eFail;
+	SEntryElement* entryPos = m_entryList;
+	STagParams* tagPos = m_dataTagList;
+
+	/* Update the base addrress of data tags */
+	while (entryPos != NULL)
+	{
+		/* Find the tag in the tag list */
+		while (tagPos != NULL)
+		{
+			/* Asume tag not found */
+			tagFound = eFail;
+
+			if (strcmp(tagPos->tagName, entryPos->tagName) == 0)
+			{
+				tagFound = eSucsess;
+				entryPos->address.addrVal.val = tagPos->tagAddr.addrVal.val;
+				break;
+			}
+
+			tagPos = tagPos->nextEelement;
+		}
+
+		if (!tagFound)
+		{
+			res = eFail;
+			entryPos->address.addrVal.val = 0;
+			printf("Tag not found for entry %s", entryPos->tagName);
+		}
+
+		entryPos = entryPos->nextEelement;
+	}
 }
 
 /******************************************************************************

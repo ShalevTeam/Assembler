@@ -20,6 +20,7 @@
 #define MAX_OPERAND_NUM  2
 #define MAX_FILE_NAME	100
 #define MAX_OBJECTLINE_LENGTH 100
+#define MAX_ENTITY_LINE_LENGTH 100
 
 
 typedef enum ESucsessFail

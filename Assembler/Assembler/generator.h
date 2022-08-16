@@ -12,5 +12,6 @@
 #include "globalDefs.h"
 
 ESucsessFail generateCodeFile();
+ESucsessFail generateEntryFile();
 
 #endif
