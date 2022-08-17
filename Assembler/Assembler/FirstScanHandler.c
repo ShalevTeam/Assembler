@@ -1381,7 +1381,7 @@ ESucsessFail doFirstFileScan(char* fileData)
 
 		if (startPos != NULL)
 		{
-			printf("Handle line %d: %s", lineNumber, line);
+			/*printf("Handle line %d: %s", lineNumber, line);*/
 
 			if (!analizeLine(lineNumber, line))
 			{

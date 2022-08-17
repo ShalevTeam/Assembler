@@ -81,63 +81,73 @@ void processFile(char* fileName)
     int fileData = 0;
     char* postProccesData = NULL;
     FILE* file = NULL;
+    char* rawCodeData;
+    
+
     file = fopen(fileName, "r");
 
-    printf("handle file %s\n", fileName);
-
-    fseek(file, 0L, SEEK_END);
-    fileSize = ftell(file);
-
-    fseek(file, 0L, SEEK_SET);
-
-    /* Allocate buffer for data read*/
-    char* rawCodeData = malloc(fileSize);
-
-    if (file && (fileSize>0))
+    if (file)
     {
-        if (rawCodeData)
+        printf("handle file %s\n", fileName);
+
+        fseek(file, 0L, SEEK_END);
+        fileSize = ftell(file);
+
+        fseek(file, 0L, SEEK_SET);
+
+        if (fileSize > 0)
         {
-            /* Read all the file content*/
-            while  (1)
-            {
-                fileData = fgetc(file);
+            /* Allocate buffer for data read*/
+            rawCodeData = malloc(fileSize);
 
-                if (fileData == EOF)
+            if (rawCodeData)
+            {
+                /* Read all the file content*/
+                while (1)
                 {
-                    break;
-                }
-                else
-                {
-                    if (filePos < fileSize)
+                    fileData = fgetc(file);
+
+                    if (fileData == EOF)
                     {
-                        rawCodeData[filePos] = (char)fileData;
+                        break;
                     }
-                }
-                
-                filePos++;
-            }
-
-            // End the string
-            rawCodeData[filePos] = '\0';
-
-            // Init all data structure
-            initDataBase();
-
-            if (handleMacros(rawCodeData, &postProccesData))
-            {
-                printf("done handle macros for %s\n", fileName);
-
-                if (doFirstFileScan(postProccesData))
-                {
-                    printf("\ndone first file scan for %s\n", fileName); 
-
-                    if (doSecondFileScan())
+                    else
                     {
-                        printf("\ndone second file scan for %s\n", fileName);
-
-                        if (generateCodeFile())
+                        if (filePos < fileSize)
                         {
+                            rawCodeData[filePos] = (char)fileData;
+                        }
+                    }
 
+                    filePos++;
+                }
+
+                // End the string
+                rawCodeData[filePos] = '\0';
+
+                // Init all data structure
+                initDataBase();
+
+                if (handleMacros(rawCodeData, &postProccesData))
+                {
+                    printf("done handle macros for %s\n", fileName);
+
+                    if (doFirstFileScan(postProccesData))
+                    {
+                        printf("done first file scan for %s", fileName);
+
+                        if (doSecondFileScan())
+                        {
+                            printf("\ndone second file scan for %s\n", fileName);
+
+                            if (generateCodeFile())
+                            {
+
+                            }
+                            else
+                            {
+                                printf("fail on second file scan for %s\n", fileName);
+                            }
                         }
                         else
                         {
@@ -146,25 +156,26 @@ void processFile(char* fileName)
                     }
                     else
                     {
-                        printf("fail on second file scan for %s\n", fileName);
+                        printf("fail on first file scan for %s\n", fileName);
                     }
-                }
+
+                    free(postProccesData);
+
+                }// if macro handled ok
                 else
                 {
-                    printf("fail on first file scan for %s\n", fileName);
+                    printf("fail handle macros for %s\n", fileName);
                 }
 
-                free(postProccesData);
+                free(rawCodeData);
 
-            }// if macro handled ok
-            else
-            {
-                printf("fail handle macros for %s\n", fileName);
-            }
+            } // if raw code
+        }
+        else
+        {
+            printf("Input file is empty: %s\n", fileName);
+        }
 
-            free(rawCodeData);
-
-        } // if raw code
         fclose(file);
     }
     else

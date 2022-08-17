@@ -69,7 +69,7 @@ ESucsessFail generateCodeFile()
 		{
 			if (generateExternalsFile())
 			{
-				printf("Output files generation completed\n");
+				printf("Output files generation completed\n\n");
 			}
 			else
 			{
