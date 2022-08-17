@@ -219,9 +219,44 @@ char* getObjectFileName()
 	return m_objectFileName;
 }
 
+/******************************************************************************
+* Function : getEntryFileName()
+*
+*  This function returns a pointer to a string containing the entry file name
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  char*: A pointer to the object file name
+*
+*******************************************************************************/
 char* getEntryFileName()
 {
 	return m_entryFileName;
+}
+
+/******************************************************************************
+* Function : getExternFileName()
+*
+*  This function returns a pointer to a string containing the externals file name
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  char*: A pointer to the object file name
+*
+*******************************************************************************/
+char* getExternFileName()
+{
+	return m_externFileName;
 }
 
 /******************************************************************************

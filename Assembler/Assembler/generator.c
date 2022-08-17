@@ -67,7 +67,15 @@ ESucsessFail generateCodeFile()
 	{
 		if (generateEntryFile())
 		{
-	
+			if (generateExternalsFile())
+			{
+				printf("Output files generation completed\n");
+			}
+			else
+			{
+				res = eFail;
+				printf("Internal err : extern file generation failed\n");
+			}
 		}
 		else
 		{
@@ -80,6 +88,55 @@ ESucsessFail generateCodeFile()
 		res = eFail;
 		printf("Internal err : object file generation failed\n");
 	}
+	return res;
+}
+
+/******************************************************************************
+* Function : generateExternalsFile()
+*
+*  This function generates the externals file
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  ESucsessFail - eSucsess if all files were generated Sucsessfuly
+*
+*******************************************************************************/
+ESucsessFail generateExternalsFile()
+{
+	ESucsessFail res = eSucsess;
+	FILE* file = NULL;
+	char* fileName = getExternFileName();
+	SExternElement* listPos = getExternalList();
+	char line[MAX_ENTITY_LINE_LENGTH] = { 0, };
+	int linePos = 0;
+	char symbol = 0;
+
+	if (listPos == NULL)
+	{
+		/* This is not an err */
+		printf("Extern list is empty\n");
+	}
+	else
+	{
+		/* Generate the output file*/
+		file = fopen(fileName, "w");
+
+		if (file != NULL)
+		{
+			/* Go over the code list*/
+			while (listPos != NULL)
+			{
+				linePos = 0;
+			}
+		}
+	}
+
+
 	return res;
 }
 
@@ -110,7 +167,8 @@ ESucsessFail generateEntryFile()
 
 	if (listPos == NULL)
 	{
-		printf("Internal err:  Entry list is empty\n");
+		/* This is not an err */
+		printf("Entry list is empty\n");
 	}
 	else
 	{

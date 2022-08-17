@@ -13,5 +13,6 @@
 
 ESucsessFail generateCodeFile();
 ESucsessFail generateEntryFile();
+ESucsessFail generateExternalsFile();
 
 #endif
