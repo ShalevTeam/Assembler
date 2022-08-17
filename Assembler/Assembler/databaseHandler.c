@@ -403,7 +403,7 @@ void setCurrentLineNumber(int lineNumber)
 /******************************************************************************
 * Function : addMacroElemet()
 *
-*  This function adds an element to the Entry list
+*  This function adds an element to the macros list
 *
 *
 * \param
@@ -418,6 +418,76 @@ void setCurrentLineNumber(int lineNumber)
 ESucsessFail addMacroElemet(char const* macroName, char const* macroString)
 {
 	ESucsessFail res = eSucsess;
+	SMacroElement* latest = m_macroList;
+	SMacroElement* prev = m_macroList;
+
+	// Find the latest element
+	while (latest != NULL)
+	{
+		prev = latest;
+		latest = latest->nextEelement;
+	}
+
+	SMacroElement* newElem = malloc(sizeof(SMacroElement));
+
+	if (m_macroList == NULL)
+	{
+		m_macroList = newElem;
+	}
+
+	if (newElem)
+	{
+		if (prev != NULL)
+		{
+			prev->nextEelement = newElem;
+		}
+
+		newElem->nextEelement = NULL;
+
+		if (macroName)
+		{
+			newElem->macroName = malloc(strlen(macroName) + 1);
+			if (newElem->macroName)
+			{
+				strcpy(newElem->macroName, macroName);
+				newElem->nextEelement = NULL;
+
+				if (macroString)
+				{
+					newElem->macroData = malloc(strlen(macroString) + 1);
+					if (newElem->macroData)
+					{
+						strcpy(newElem->macroData, macroString);
+						newElem->nextEelement = NULL;
+					}
+					else
+					{
+						printf("Err on line %d memory alloc fail\n", m_lineNumber);
+						res = eFail;
+					}
+				}
+				else
+				{
+					printf("Err on line %d memory alloc fail\n", m_lineNumber);
+					res = eFail;
+				}
+			}
+			else
+			{
+				printf("Err on line %d memory alloc fail\n", m_lineNumber);
+				res = eFail;
+			}
+		}
+		else
+		{
+			printf("Err on line %d internal err invalid entry\n", m_lineNumber);
+		}
+	}
+	else
+	{
+		printf("Err on line %d memory alloc fail\n", m_lineNumber);
+		res = eFail;
+	}
 
 	return res;
 }

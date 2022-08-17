@@ -37,6 +37,7 @@ ESucsessFail handleMacros(char* inFileData, char** outFileData)
 	char line[MAX_LINE_LENGTH];
 	int outPos = 0;
 	char* tmpFileData;
+	SMacroElement* macroList = NULL;
 	
 	if (curPos == NULL)
 	{
@@ -84,25 +85,32 @@ ESucsessFail handleMacros(char* inFileData, char** outFileData)
 			strcpy(*outFileData, inFileData);
 
 			// replace macro usage in the output file
-			tmpFileData = macro_replace(*outFileData, "m1", "m2");
-
-			if (tmpFileData != NULL)
+			macroList = getMacrosList();
+			while (macroList != NULL)
 			{
-				if (strlen(tmpFileData) > m_maxAllocForOutput)
+				tmpFileData = macro_replace(*outFileData, macroList->macroName, macroList->macroData);
+
+				if (tmpFileData != NULL)
 				{
-					m_maxAllocForOutput = reallocAndCopyBuffer(outFileData, m_maxAllocForOutput);
-
-					if (m_maxAllocForOutput == 0)
+					if (strlen(tmpFileData) > m_maxAllocForOutput)
 					{
-						printf("ReAllocation output failed\n");
-						parsOk = eFail;
-						return parsOk;
-					}
-				}
-				
-				strcpy(*outFileData, tmpFileData);
+						m_maxAllocForOutput = reallocAndCopyBuffer(outFileData, m_maxAllocForOutput);
 
-				free(tmpFileData);
+						if (m_maxAllocForOutput == 0)
+						{
+							printf("ReAllocation output failed\n");
+							parsOk = eFail;
+							return parsOk;
+						}
+					}
+
+					strcpy(*outFileData, tmpFileData);
+
+					free(tmpFileData);
+				}
+
+				macroList = macroList->nextEelement;
+			
 			}
 			
 		}
@@ -198,13 +206,14 @@ unsigned long addMacrosToList(char** curPos, int currLineNumber)
 				/* Check if line ends the macro*/
 				if (strstr(line, "endmacro") != NULL)
 				{
-					// Replac the macro definition in the input file with spaces
+					// Replac the macro definition in the input file with spaces to keep the line number
 					while (startPos < endPos - 1)
 					{
 						*startPos = ' ';
 						startPos++;
 					}
 
+					/* update the current position  and line number in the input file*/
 					*curPos = endPos;
 					nextLineNumber = ++currLineNumber;
 					break;
@@ -224,6 +233,7 @@ unsigned long addMacrosToList(char** curPos, int currLineNumber)
 			}
 
 			printf("Add Macro %s,data %s\n", macroName, macroData);
+			addMacroElemet(macroName, macroData);
 		}
 
 	}
