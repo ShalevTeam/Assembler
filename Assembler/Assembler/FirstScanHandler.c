@@ -5,7 +5,7 @@
 #define MAX_NUMBER_DIGITS  10
 
 /* Private members*/
-static char const* m_operandPosPtr = NULL; // Pointer to the operands of a command
+static char const* m_operandPosPtr = NULL; /* Pointer to the operands of a command */
 
 /* Private functions*/
 static ESucsessFail isBlank(char const* line);
@@ -189,7 +189,7 @@ ELineType getLineType(char const* line, int* additionalInfo)
 				}
 				else
 				{
-					// Check if line is just spaces
+					/* Check if line is just spaces */
 					if (!isBlank(line))
 					{
 						printf("syntax err on line %d: %s", getCurrentLineNumber(), line);
@@ -222,12 +222,12 @@ static ESucsessFail isBlank(char const* line)
 	char const* ch;
 	ESucsessFail is_blank = eSucsess;
 
-	// Iterate through each character.
+	/* Iterate through each character. */
 	for (ch = line; (*ch != '\0') && (*ch != '\n'); ++ch)
 	{
 		if (*ch != ' ')
 		{
-			// Found a non-whitespace character.
+			/* Found a non-whitespace character. */
 			is_blank = eFail;
 			break;
 		}
@@ -412,7 +412,7 @@ static ESucsessFail isWordExistInLine(char const* line, char const* word)
 
 	if (pos != NULL)
 	{
-		// Check from the left side to see if its a complet word
+		/* Check from the left side to see if its a complet word */
 		if (pos != line)
 		{
 			if (*(pos - 1) != ' ')
@@ -422,7 +422,7 @@ static ESucsessFail isWordExistInLine(char const* line, char const* word)
 			}
 		}
 
-		// Check from the right side to see if its a complet word
+		/* Check from the right side to see if its a complet word */
 		endPos = (pos + strlen(word));
 
 		if((*endPos == ',')	 ||
@@ -436,7 +436,7 @@ static ESucsessFail isWordExistInLine(char const* line, char const* word)
 
 	if (wordExist)
 	{
-		// Assume a command word (if not the m_operandPosPtr will not be used)
+		/* Assume a command word (if not the m_operandPosPtr will not be used) */
 		m_operandPosPtr = endPos;
 	}
 	return wordExist;
@@ -462,10 +462,10 @@ ESucsessFail handleTag(char const* line , EtagType tagType)
 	char* dotPos = strstr(line, ":");
 	char* strtPos = dotPos;
 	
-	// find if Tag exist
+	/* find if Tag exist */
 	if (dotPos != NULL)
 	{
-		// find the tag start
+		/* find the tag start */
 		while (strtPos != line)
 		{
 			if (*strtPos == ' ')
@@ -542,7 +542,7 @@ ESucsessFail setOperandAddrParams(SOperandAdressingParams* pOperandAdressingPara
 					pOperandAdressingParams->directaddrParams.tagName[strlen(pos)] = '\0';
 				}
 			}
-			else // Struct
+			else /* Struct */
 			{
 				pOperandAdressingParams->addrType = eBaseRelativeAddr;
 				pOperandAdressingParams->baseRelativeAddrParams.tagName = malloc(pos- pOperandAdressingParams->operandString);
@@ -601,12 +601,12 @@ ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressingParam
 
 	switch (pAddrParams->addrType)
 	{
-	case eEmmediateAddr: // Number
+	case eEmmediateAddr: /* Number */
 		pCodeInfo->code.valBits.are = eAreAbsulute;
 		pCodeInfo->code.valBits.val = pAddrParams->emmediateAdressingParams.number;
 		break;
 
-	case eDirectaddr: //Tag
+	case eDirectaddr: /*Tag */
 
 		tagName = pAddrParams->directaddrParams.tagName;
 		pCodeInfo->tag = malloc(strlen(tagName) + 1);
@@ -623,7 +623,7 @@ ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressingParam
 		
 		break;
 
-	case eBaseRelativeAddr: //Struct
+	case eBaseRelativeAddr: /*Struct */
 
 		/* Set the struct offset*/
 		if (callCount == 1)
@@ -631,7 +631,7 @@ ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressingParam
 			pCodeInfo->code.valBits.are = eAreAbsulute;
 			pCodeInfo->code.valBits.val = pAddrParams->baseRelativeAddrParams.tagOffset;
 		}
-		else // Set the struct TAG
+		else /* Set the struct TAG */
 		{
 			pCodeInfo->tag = malloc(strlen(pAddrParams->baseRelativeAddrParams.tagName)+1);
 
@@ -647,7 +647,7 @@ ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressingParam
 		}
 		break;
 
-	case eRegisterAddr:// Register
+	case eRegisterAddr:/* Register */
 		pCodeInfo->code.regBits.are = eAreAbsulute;
 
 		if (pAddrParams->registerAddrParams.dstRegNumber)
@@ -659,7 +659,7 @@ ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressingParam
 			pCodeInfo->code.regBits.srcRegNum = pAddrParams->registerAddrParams.srcRegNumber;
 		}
 		break;
-	case eUnidentifiedAddr: // Err - not identified
+	case eUnidentifiedAddr: /* Err - not identified */
 		printf("Err on line %d cant identify addr type\n", getCurrentLineNumber());
 		res = eFail;
 		break;
@@ -999,10 +999,10 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	SCodeinfo codeinfo = { 0, };
 	int activationCount = 0; /* Used for creating 2 elements for struct*/
 
-	// Search for operands
+	/* Search for operands */
 	numOfOperands = setOperandsString(operandAdressingParams);
 	
-	// Check if the number of operands is valid
+	/* Check if the number of operands is valid */
 	if (!isNumberOfOperandsValid(numOfOperands,cmnd))
 	{
 		printf("Err on line %d invalid number of operands\n", getCurrentLineNumber());
@@ -1010,7 +1010,7 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 		return res;
 	}
 	
-	// Process operands
+	/* Process operands */
 	for (operIdx = 0; operIdx < numOfOperands; operIdx++)
 	{
 		if (!setOperandAddrParams(&operandAdressingParams[operIdx], operIdx))
@@ -1021,7 +1021,7 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 		}
 	}
 
-	//Set the code opcode line data
+	/*Set the code opcode line data */
 	freeAndResetCodeInfo(&codeinfo);
 	codeinfo.code.cmndBits.are = eAreAbsulute;
 	codeinfo.code.cmndBits.opcode = cmnd;
@@ -1041,7 +1041,7 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	addCodeElemet(codeinfo);
 	freeAndResetCodeInfo(&codeinfo);
 	
-	// Set the code operands
+	/* Set the code operands */
 	for (operIdx = 0; operIdx < numOfOperands; operIdx++)
 	{
 		/* reset on each operand index*/
@@ -1053,13 +1053,13 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 		}
 		else
 		{
-			// Handle 2 registers - special case
+			/* Handle 2 registers - special case */
 			if ((numOfOperands ==2) &&
 				(operIdx == 0) &&
 				(operandAdressingParams[0].addrType == eRegisterAddr) &&
 				(operandAdressingParams[1].addrType == eRegisterAddr))
 			{
-				// don't add code until the second register
+				/* don't add code until the second register */
 			}
 			else /* Not 2 registers*/
 			{
@@ -1182,7 +1182,7 @@ ESucsessFail  handleInstructionLine(char const* line, EInstructionCmnd cmd)
 *******************************************************************************/
 ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd)
 {
-	// Add TAG if exist to the list of tags
+	/* Add TAG if exist to the list of tags */
 	ESucsessFail res = handleTag(line, eDataTag);
 
 	switch (cmnd)
@@ -1229,12 +1229,12 @@ int setOperandsString(SOperandAdressingParams operandAddrPrmsArray[])
 
 	if (m_operandPosPtr == NULL)
 	{
-		// Internal err
+		/* Internal err */
 		printf("Err on line %d unexpected null pointer\n", getCurrentLineNumber());
 		return 0;
 	}
 
-	// Search for operands
+	/* Search for operands */
 	while (1)
 	{
 		if ((*currPos == ' ') || (*currPos == ',') || (*currPos == '\n'))
@@ -1243,7 +1243,7 @@ int setOperandsString(SOperandAdressingParams operandAddrPrmsArray[])
 			{
 				if (*currPos == '\n')
 				{
-					// No more operands
+					/* No more operands */
 					break;
 				}
 				else if (*currPos == ',')
@@ -1255,21 +1255,21 @@ int setOperandsString(SOperandAdressingParams operandAddrPrmsArray[])
 					}
 					else
 					{
-						// Skip comma between words
+						/* Skip comma between words */
 						currPos++;
 						continue;
 					}
 				}
 				else
 				{
-					// Skip leading spaces
+					/* Skip leading spaces */
 					currPos++;
 					continue;
 				}
 			}
 			else
 			{
-				// End of word
+				/* End of word */
 				operandAddrPrmsArray[numOperandFound].operandString = malloc(wordLength+1);
 				strncpy(operandAddrPrmsArray[numOperandFound].operandString, strtPos, wordLength);
 				operandAddrPrmsArray[numOperandFound].operandString[wordLength] = 0;
@@ -1279,13 +1279,13 @@ int setOperandsString(SOperandAdressingParams operandAddrPrmsArray[])
 
 				if (numOperandFound == MAX_OPERAND_NUM)
 				{
-					// No more operands
+					/* No more operands */
 					break;
 				}
 
 				if (*currPos == '\n')
 				{
-					// No more operands
+					/* No more operands */
 					break;
 				}
 			}
@@ -1325,7 +1325,7 @@ ESucsessFail analizeLine(int lineNumber, char const* line)
 
 	setCurrentLineNumber(lineNumber);
 
-	// First we chek the line type
+	/* First we chek the line type */
 	ELineType lineType = getLineType(line, &additionalInfo);
 
 	switch (lineType)
@@ -1367,7 +1367,7 @@ ESucsessFail doFirstFileScan(char* fileData)
 	char line[MAX_LINE_LENGTH];
 	int lineLength = 0;
 
-	// read line
+	/* read line */
 	char* startPos = fileData;
 	int lineNumber = 0;
 

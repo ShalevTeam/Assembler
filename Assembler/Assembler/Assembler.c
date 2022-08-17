@@ -6,7 +6,7 @@
 #include "SecondScanHandler.h"
 #include "generator.h"
 
-// private function declerations
+/* private function declerations */
 static void processFile(char* fileName);
 
 /******************************************************************************
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 
         if ((fullFileName = malloc(strlen(argv[i]) + strlen(".as") + 1)) != NULL)
         {
-            fullFileName[0] = '\0';   // ensures the memory is an empty string
+            fullFileName[0] = '\0';   /* ensures the memory is an empty string */
             strcat(fullFileName, argv[i]);
 
             /* Save the name of the currently handled file */
@@ -122,10 +122,10 @@ void processFile(char* fileName)
                     filePos++;
                 }
 
-                // End the string
+                /* End the string */
                 rawCodeData[filePos] = '\0';
 
-                // Init all data structure
+                /* Init all data structure */
                 initDataBase();
 
                 if (handleMacros(rawCodeData, &postProccesData))
@@ -161,7 +161,7 @@ void processFile(char* fileName)
 
                     free(postProccesData);
 
-                }// if macro handled ok
+                }/* if macro handled ok */
                 else
                 {
                     printf("fail handle macros for %s\n", fileName);
@@ -169,7 +169,7 @@ void processFile(char* fileName)
 
                 free(rawCodeData);
 
-            } // if raw code
+            } /* if raw code */
         }
         else
         {

@@ -38,11 +38,11 @@ typedef enum EtagType
 
 typedef enum EAddrType
 {
-	eEmmediateAddr, // Number
-	eDirectaddr, //Tag
-	eBaseRelativeAddr, //Struct
-	eRegisterAddr, // Register
-	eUnidentifiedAddr // Err - not identified
+	eEmmediateAddr, /* Number */
+	eDirectaddr, /*Tag */
+	eBaseRelativeAddr, /*Struct */
+	eRegisterAddr, /* Register */
+	eUnidentifiedAddr /* Err - not identified */
 }EAddrType;
 
 
@@ -158,7 +158,7 @@ typedef struct SCodeinfo
 	SAddrressVal codeAddress;
 	ScodeWord code;
 	ECodeStatus Status;
-	char* tag; // Tag which need to be translate to code
+	char* tag; /* Tag which need to be translate to code */
 }SCodeinfo;
 
 struct SMacroElement;
@@ -180,7 +180,7 @@ struct STagParams;
 typedef struct STagParams
 {
 	char* tagName;
-	ScodeWord tagAddr; // Address of the TAG
+	ScodeWord tagAddr; /* Address of the TAG */
 	EtagType tagType;
 	struct STagParams* nextEelement;
 }STagParams;
@@ -196,14 +196,14 @@ struct SExternElement;
 typedef struct SExternElement
 {
 	char* tagName;
-	SAddressElement* externUseAddrList; // The adddress where the extern is used
+	SAddressElement* externUseAddrList; /* The adddress where the extern is used */
 	struct SExternElement* nextEelement;
 }SExternElement;
 
 typedef struct SEntryElement
 {
 	char* tagName;
-	ScodeWord address; //The Entry Tag address
+	ScodeWord address; /*The Entry Tag address */
 	struct SEntryElement* nextEelement;
 }SEntryElement;
 

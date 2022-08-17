@@ -2,12 +2,12 @@
 #include "databaseHandler.h"
 #include "FirstScanHandler.h"
 
-//Local macros
+/*Local macros */
 #define FILE_SIZE_FACTOR  5
 
-// members
+/* members */
 static unsigned long m_maxAllocForOutput = MAX_ASSEBLER_FILE_SIZE * FILE_SIZE_FACTOR;
-unsigned long m_outputlength = 0; //length of output file
+unsigned long m_outputlength = 0; /*length of output file */
 
 /* Private functions*/
 static char* macro_replace(char const* orig, char const* rep, char const* with);
@@ -66,12 +66,12 @@ ESucsessFail handleMacros(char* inFileData, char** outFileData)
 
 		if (*outFileData)
 		{
-			// Scan the file once to handle macro definitions
+			/* Scan the file once to handle macro definitions */
 			while (*curPos != '\0')
 			{
 				lineNumber++;
 
-				// read line
+				/* read line */
 				curPos = readLine(curPos, line);
 
 				if (curPos != NULL)
@@ -84,7 +84,7 @@ ESucsessFail handleMacros(char* inFileData, char** outFileData)
 			/* build  the initial output */
 			strcpy(*outFileData, inFileData);
 
-			// replace macro usage in the output file
+			/* replace macro usage in the output file */
 			macroList = getMacrosList();
 			while (macroList != NULL)
 			{
@@ -187,7 +187,7 @@ unsigned long addMacrosToList(char** curPos, int currLineNumber)
 			/* Skip the line end*/
 			endPos++;
 
-			// Replac the macro definition in the input file with empty line
+			/* Replac the macro definition in the input file with empty line */
 			while (startPos < endPos-1)
 			{
 				*startPos = ' ';
@@ -206,7 +206,7 @@ unsigned long addMacrosToList(char** curPos, int currLineNumber)
 				/* Check if line ends the macro*/
 				if (strstr(line, "endmacro") != NULL)
 				{
-					// Replac the macro definition in the input file with spaces to keep the line number
+					/* Replac the macro definition in the input file with spaces to keep the line number */
 					while (startPos < endPos - 1)
 					{
 						*startPos = ' ';
@@ -224,7 +224,7 @@ unsigned long addMacrosToList(char** curPos, int currLineNumber)
 					strcat(macroData, line);
 				}
 
-				// Replac the macro definition in the input file with spaces
+				/* Replac the macro definition in the input file with spaces */
 				while (startPos < endPos-1)
 				{
 					*startPos = ' ';

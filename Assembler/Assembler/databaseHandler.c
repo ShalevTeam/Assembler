@@ -2,13 +2,13 @@
 #include "databaseHandler.h"
 
 /* Private memebers */
-static SEntryElement* m_entryList = NULL; // List of all entry and there address
+static SEntryElement* m_entryList = NULL; /* List of all entry and there address */
 static int m_lineNumber = 0;
-SMacroElement* m_macroList = NULL; // List of all macros
-SExternElement* m_externList = NULL; // List of all extern and their usage
-STagParams* m_dataTagList = NULL; // list of all defined TAG in the code
-SCodeElement* m_codeList = NULL; // The code that was generated
-ScodeWord* m_pDataSeqtion = NULL; // The data seq
+SMacroElement* m_macroList = NULL; /* List of all macros */
+SExternElement* m_externList = NULL; /* List of all extern and their usage */
+STagParams* m_dataTagList = NULL; /* list of all defined TAG in the code */
+SCodeElement* m_codeList = NULL; /* The code that was generated */
+ScodeWord* m_pDataSeqtion = NULL; /* The data seq */
 static int m_codePos = CODE_INITIAL_ADDR;
 static int m_dataPos = 0;
 static int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
@@ -421,7 +421,7 @@ ESucsessFail addMacroElemet(char const* macroName, char const* macroString)
 	SMacroElement* latest = m_macroList;
 	SMacroElement* prev = m_macroList;
 
-	// Find the latest element
+	/* Find the latest element */
 	while (latest != NULL)
 	{
 		prev = latest;
@@ -514,7 +514,7 @@ ESucsessFail addEntryElemet(char const* tagName)
 	SEntryElement* latest = m_entryList;
 	SEntryElement* prev = m_entryList;
 
-	// Find the latest element
+	/* Find the latest element */
 	while (latest != NULL)
 	{
 		prev = latest;
@@ -587,13 +587,13 @@ ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType tagTy
 	STagParams* latest = m_dataTagList;
 	STagParams* prev = m_dataTagList;
 
-	// Validate tag
+	/* Validate tag */
 	if (*tagName == ' ')
 	{
 		printf("Err on line %d Tag containe spaces\n", m_lineNumber);
 	}
 
-	// Find the latest element
+	/* Find the latest element */
 	while (latest != NULL)
 	{
 		if (strncmp(latest->tagName, tagName, tagLength) == 0)
@@ -718,12 +718,12 @@ ESucsessFail addExternElemet(char const* tagName)
 	SExternElement* prev = m_externList;
 	ESucsessFail tagFound = eFail;
 
-	// Check if the tag exist
+	/* Check if the tag exist */
 	while (latest != NULL)
 	{
 		if (strcmp(latest->tagName, tagName) == 0)
 		{
-			// Tag found
+			/* Tag found */
 			tagFound = eSucsess;
 			break;
 		}
@@ -796,7 +796,7 @@ ESucsessFail addCodeElemet(SCodeinfo codeInfo)
 
 	codeInfo.codeAddress.val = m_codePos;
 
-	// Find the latest element
+	/* Find the latest element */
 	while (latest != NULL)
 	{
 		prev = latest;
@@ -956,7 +956,7 @@ ESucsessFail istagExist(char const* tag, ESucsessFail* pIsExternalTag, short* pT
 	SExternElement* pCurrPosExternList = getExternalList();
 	STagParams* pCurrPosTagList = getTagList();
 
-	// Check the external list
+	/* Check the external list */
 	while (pCurrPosExternList != NULL)
 	{
 		if (strcmp(pCurrPosExternList->tagName, tag) == 0)
@@ -970,7 +970,7 @@ ESucsessFail istagExist(char const* tag, ESucsessFail* pIsExternalTag, short* pT
 		pCurrPosExternList = pCurrPosExternList->nextEelement;
 	}
 
-	// Check the tag list
+	/* Check the tag list */
 	while (pCurrPosTagList != NULL)
 	{
 		if (strcmp(pCurrPosTagList->tagName, tag) == 0)
@@ -1005,13 +1005,13 @@ int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
 {
 	int newSize = oldSize * 2;
 
-	// Save the address of the old data
+	/* Save the address of the old data */
 	void** oldBuf = allocatedBuf;
 
-	// allocate new buf
+	/* allocate new buf */
 	*allocatedBuf = malloc(newSize);
 
-	// Copy data from old buf to the new one
+	/* Copy data from old buf to the new one */
 	if (*allocatedBuf)
 	{
 		memcpy(allocatedBuf, oldBuf, oldSize);
@@ -1139,7 +1139,7 @@ ESucsessFail generateCodeForTag()
 		}
 		else
 		{
-			// Check if tag exist
+			/* Check if tag exist */
 			if (istagExist(currPos->codeInfo.tag, &isExternalTag, &tagAddr))
 			{
 				if (isExternalTag)
