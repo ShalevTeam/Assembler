@@ -1342,7 +1342,6 @@ ESucsessFail analizeLine(int lineNumber, char const* line)
 		res = handleInstructionLine(line,(EInstructionCmnd)additionalInfo);
 		break;
 	case eLineUndefine:
-		printf("empty line\n");
 		break;
 	}
 

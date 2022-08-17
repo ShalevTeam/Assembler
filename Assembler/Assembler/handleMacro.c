@@ -232,7 +232,6 @@ unsigned long addMacrosToList(char** curPos, int currLineNumber)
 				}
 			}
 
-			printf("Add Macro %s,data %s\n", macroName, macroData);
 			addMacroElemet(macroName, macroData);
 		}
 
