@@ -179,18 +179,32 @@ unsigned long addMacrosToList(char** curPos, int currLineNumber)
 			/* Skip the line end*/
 			endPos++;
 
+			// Replac the macro definition in the input file with empty line
+			while (startPos < endPos-1)
+			{
+				*startPos = ' ';
+				startPos++;
+			}
+
 			/* Get the macro string */
-			
 			while (1)
 			{
 				/* read line */
+				startPos = endPos;
 				endPos = readLine(endPos, line);
+				
 				currLineNumber++;
 
 				/* Check if line ends the macro*/
 				if (strstr(line, "endmacro") != NULL)
 				{
-					/* End of macro string*/
+					// Replac the macro definition in the input file with spaces
+					while (startPos < endPos - 1)
+					{
+						*startPos = ' ';
+						startPos++;
+					}
+
 					*curPos = endPos;
 					nextLineNumber = ++currLineNumber;
 					break;
@@ -200,16 +214,16 @@ unsigned long addMacrosToList(char** curPos, int currLineNumber)
 					/* Add the line to the macro string */
 					strcat(macroData, line);
 				}
+
+				// Replac the macro definition in the input file with spaces
+				while (startPos < endPos-1)
+				{
+					*startPos = ' ';
+					startPos++;
+				}
 			}
 
 			printf("Add Macro %s,data %s\n", macroName, macroData);
-
-			// Replac the macro definition in the input file with spaces
-			while (startPos < endPos)
-			{
-				*startPos = ' ';
-				startPos++;
-			}
 		}
 
 	}
