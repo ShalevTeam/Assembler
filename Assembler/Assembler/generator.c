@@ -128,12 +128,60 @@ ESucsessFail generateExternalsFile()
 
 		if (file != NULL)
 		{
-			/* Go over the code list*/
+			/* Go over the extern list*/
 			while (listPos != NULL)
 			{
-				linePos = 0;
+				/* Go over the extern usage*/
+				while (listPos->externUseAddrList != NULL)
+				{
+					linePos = 0;
+
+					strcpy(line, listPos->tagName);
+					linePos = strlen(listPos->tagName);
+
+					line[linePos++] = ' ';
+					line[linePos++] = ' ';
+					line[linePos++] = ' ';
+					line[linePos++] = ' ';
+
+					if (listPos->externUseAddrList->address.decodedVal.msb < sizeof(symbolTable) / sizeof(symbolTable[0]))
+					{
+						symbol = symbolTable[listPos->externUseAddrList->address.decodedVal.msb];
+						line[linePos++] = symbol;
+
+						if (listPos->externUseAddrList->address.decodedVal.lsb < sizeof(symbolTable) / sizeof(symbolTable[0]))
+						{
+							symbol = symbolTable[listPos->externUseAddrList->address.decodedVal.lsb];
+							line[linePos++] = symbol;
+							line[linePos++] = '\n';
+							line[linePos++] = '\0';
+							fwrite(line, strlen(line), 1, file);
+						}
+						else
+						{
+							res = eFail;
+							printf("Internal err - Symbol index is to big\n");
+						}
+					}
+					else
+					{
+						res = eFail;
+						printf("Internal err - Symbol index is to big\n");
+					}
+
+
+
+					listPos->externUseAddrList = listPos->externUseAddrList->nextEelement;
+				}
+				
+
+				listPos = listPos->nextEelement;
 			}
+
+			fclose(file);
 		}
+
+		
 	}
 
 
