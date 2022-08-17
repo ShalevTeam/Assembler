@@ -130,7 +130,7 @@ void processFile(char* fileName)
 
                 if (handleMacros(rawCodeData, &postProccesData))
                 {
-                    printf("done handle macros for %s\n", fileName);
+                    printf("\ndone handle macros for %s\n", fileName);
 
                     if (doFirstFileScan(postProccesData))
                     {

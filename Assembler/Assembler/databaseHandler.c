@@ -4,7 +4,8 @@
 /* Private memebers */
 static SEntryElement* m_entryList = NULL; // List of all entry and there address
 static int m_lineNumber = 0;
-SExternElement* m_externList = NULL; // List of all extern and there use
+SMacroElement* m_macroList = NULL; // List of all macros
+SExternElement* m_externList = NULL; // List of all extern and their usage
 STagParams* m_dataTagList = NULL; // list of all defined TAG in the code
 SCodeElement* m_codeList = NULL; // The code that was generated
 ScodeWord* m_pDataSeqtion = NULL; // The data seq
@@ -34,6 +35,26 @@ char m_entryFileName[MAX_FILE_NAME];
 ESucsessFail initDataBase()
 {
 	ESucsessFail res = eSucsess;
+
+	while (m_macroList != NULL)
+	{
+		SMacroElement* pNextEntry = m_macroList->nextEelement;
+		if (m_macroList->macroData)
+		{
+			free(m_macroList->macroData);
+			m_macroList->macroData = NULL;
+		}
+
+		if (m_macroList->macroName)
+		{
+			free(m_macroList->macroName);
+			m_macroList->macroName = NULL;
+		}
+
+		free(m_macroList);
+
+		m_macroList = pNextEntry;
+	}
 
 	while (m_entryList != NULL)
 	{
@@ -137,6 +158,26 @@ ESucsessFail initDataBase()
 SEntryElement* getEntryList()
 {
 	return m_entryList;
+}
+
+/******************************************************************************
+* Function : getMacrosList()
+*
+*  This function returns a pointer to the macros list
+*
+*
+* \param
+*  None.
+*
+*
+*
+* \return
+*  SEntryElement* : A pointer to the entry list
+*
+*******************************************************************************/
+SMacroElement* getMacrosList()
+{
+	return m_macroList;
 }
 
 /******************************************************************************
@@ -357,6 +398,28 @@ void setAsemblerFileName(char const* fileName)
 void setCurrentLineNumber(int lineNumber)
 {
 	m_lineNumber = lineNumber;
+}
+
+/******************************************************************************
+* Function : addMacroElemet()
+*
+*  This function adds an element to the Entry list
+*
+*
+* \param
+*  char const* macroName , INPUT: The name of the macro
+*  char const* macroString, INPUT: The macro string
+*
+*
+* \return
+*  ESucsessFail: eSucsess if added OK
+*
+*******************************************************************************/
+ESucsessFail addMacroElemet(char const* macroName, char const* macroString)
+{
+	ESucsessFail res = eSucsess;
+
+	return res;
 }
 
 /******************************************************************************
@@ -941,6 +1004,8 @@ ESucsessFail updateEntryAddress()
 
 		entryPos = entryPos->nextEelement;
 	}
+
+	return res;
 }
 
 /******************************************************************************

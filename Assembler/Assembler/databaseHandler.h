@@ -12,6 +12,7 @@
 #include "globalDefs.h"
 
 /* Getters*/
+SMacroElement* getMacrosList();
 SEntryElement* getEntryList();
 SExternElement* getExternalList();
 STagParams* getTagList();
@@ -21,10 +22,12 @@ int getCurrentLineNumber();
 int getDataSize();
 char* getObjectFileName();
 char* getEntryFileName();
+char* getExternFileName();
 
 /* Seters*/
 void setCurrentLineNumber(lineNumber);
 void setAsemblerFileName(char const* fileName);
+ESucsessFail addMacroElemet(char const* macroName, char const* macroString);
 ESucsessFail addEntryElemet(char const* tagName);
 ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType);
 ESucsessFail addData(short val);

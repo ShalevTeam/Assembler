@@ -24,7 +24,6 @@ static ESucsessFail isNumberOfOperandsValid(int operandNum,ECodeCmnd cmnd);
 static ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd);
 static ESucsessFail handleDataLine(char const* line, EDataCmnd cmnd);
 static ESucsessFail  handleInstructionLine(char const* line, EInstructionCmnd cmd);
-static char* readLine(char* startPos, char* line);
 static char* removeSpaces(char const* startPos);
 static ELineType getLineType(char const* line, int* additionalInfo);
 static ESucsessFail analizeLine(int lineNumber, char const* line);

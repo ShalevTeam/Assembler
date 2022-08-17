@@ -21,6 +21,7 @@
 #define MAX_FILE_NAME	100
 #define MAX_OBJECTLINE_LENGTH 100
 #define MAX_ENTITY_LINE_LENGTH 100
+#define MAX_MACRO_LENGTH 100
 
 
 typedef enum ESucsessFail
@@ -159,6 +160,14 @@ typedef struct SCodeinfo
 	ECodeStatus Status;
 	char* tag; // Tag which need to be translate to code
 }SCodeinfo;
+
+struct SMacroElement;
+typedef struct SMacroElement
+{
+	char* macroName;
+	char* macroData;
+	struct SMacroElement* nextEelement;
+}SMacroElement;
 
 struct SCodeElement;
 typedef struct SCodeElement

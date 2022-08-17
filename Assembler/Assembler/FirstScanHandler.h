@@ -13,5 +13,6 @@
 
 
 ESucsessFail doFirstFileScan(char* fileData);
+char* readLine(char* startPos, char* line);
 
 #endif
