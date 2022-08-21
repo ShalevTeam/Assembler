@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*Limits */
 #define MAX_ASSEBLER_FILE_SIZE 5000
 #define MAX_LINE_LENGTH  1000
 #define CODE_INITIAL_ADDR 100
@@ -22,6 +23,10 @@
 #define MAX_OBJECTLINE_LENGTH 100
 #define MAX_ENTITY_LINE_LENGTH 100
 #define MAX_MACRO_LENGTH 100
+
+#define CELL_FOR_NULL 1
+#define TRUE 1
+#define FALSE 0
 
 
 typedef enum ESucsessFail

@@ -4,6 +4,19 @@
 /* Our machine memory can't hold bigger numbers*/
 #define MAX_NUMBER_DIGITS  10
 
+#define NEW_LINE 1 /*Size of '\n' */
+#define CELL_BEFORE -1
+#define SKIP_r 1
+#define SKIP_DOT 1
+#define SKIP_HASHTAG 1
+#define SET_OFFSET 1
+#define SKIP_COMMA 1
+#define REG_LEN 2
+#define ONE_REG 1
+#define TWO_REGS 2
+#define FIRST 0
+#define SECOND 1
+
 /* Private members*/
 static char const* m_operandPosPtr = NULL; /* Pointer to the operands of a command */
 
@@ -54,12 +67,12 @@ char* readLine(char* startPos, char* line)
 	{
 		endpos = strchr(startPos, '\0');
 
-		isLastLine = 1;	
+		isLastLine = TRUE;	
 	}
 
-	int sizeToCopy = (int)(1 + endpos - startPos);
+	int sizeToCopy = (int)(NEW_LINE + endpos - startPos);
 
-	if (sizeToCopy + 1 < MAX_LINE_LENGTH)
+	if (sizeToCopy + CELL_FOR_NULL < MAX_LINE_LENGTH)
 	{
 		strncpy(line, startPos, sizeToCopy);
 		line[sizeToCopy] = 0;
@@ -70,7 +83,7 @@ char* readLine(char* startPos, char* line)
 		}
 		else
 		{
-			newStartPos = endpos + 1;
+			newStartPos = endpos + CELL_FOR_NULL;
 		}	
 	}
 	else
@@ -116,7 +129,7 @@ char* removeSpaces(char const* startPos)
 		end++;
 	}
 
-	newString = malloc(end - start + 1);
+	newString = malloc(end - start + CELL_FOR_NULL);
 
 	if (newString != NULL)
 	{
@@ -412,12 +425,12 @@ static ESucsessFail isWordExistInLine(char const* line, char const* word)
 
 	if (pos != NULL)
 	{
-		/* Check from the left side to see if its a complet word */
+		/* Check from the left side to see if it's a complete word */
 		if (pos != line)
 		{
-			if (*(pos - 1) != ' ')
+			if (*(pos + CELL_BEFORE) != ' ')
 			{
-				wordExist = 0;
+				wordExist = FALSE;
 				return wordExist;
 			}
 		}
@@ -430,7 +443,7 @@ static ESucsessFail isWordExistInLine(char const* line, char const* word)
 			(*endPos == '\n')||
 			(*endPos == 0))
 		{
-			wordExist = 1;
+			wordExist = TRUE;
 		}
 	}
 
@@ -507,17 +520,17 @@ ESucsessFail setOperandAddrParams(SOperandAdressingParams* pOperandAdressingPara
 	if (NULL == pos)
 	{
 		pos = pOperandAdressingParams->operandString;
-		if ((strlen(pos) == 2) && (*pos == 'r'))
+		if ((strlen(pos) == REG_LEN) && (*pos == 'r'))
 		{
 			pOperandAdressingParams->addrType = eRegisterAddr;
 
 			if (operIdx == 0)
 			{
-				pOperandAdressingParams->registerAddrParams.srcRegNumber = atoi(pos + 1);
+				pOperandAdressingParams->registerAddrParams.srcRegNumber = atoi(pos + SKIP_r);
 			}
 			else
 			{
-				pOperandAdressingParams->registerAddrParams.dstRegNumber = atoi(pos + 1);
+				pOperandAdressingParams->registerAddrParams.dstRegNumber = atoi(pos + SKIP_r);
 			}
 			
 		}
@@ -529,7 +542,7 @@ ESucsessFail setOperandAddrParams(SOperandAdressingParams* pOperandAdressingPara
 			{
 				pos = pOperandAdressingParams->operandString;
 				pOperandAdressingParams->addrType = eDirectaddr;
-				pOperandAdressingParams->directaddrParams.tagName = malloc(strlen(pos)+1);
+				pOperandAdressingParams->directaddrParams.tagName = malloc(strlen(pos) + CELL_FOR_NULL);
 
 				if (pOperandAdressingParams->directaddrParams.tagName == NULL)
 				{
@@ -558,7 +571,7 @@ ESucsessFail setOperandAddrParams(SOperandAdressingParams* pOperandAdressingPara
 						pOperandAdressingParams->operandString, 
 						pos - pOperandAdressingParams->operandString);
 					pOperandAdressingParams->baseRelativeAddrParams.tagName[pos - pOperandAdressingParams->operandString] = '\0';
-					pOperandAdressingParams->baseRelativeAddrParams.tagOffset = atoi(pos+1);
+					pOperandAdressingParams->baseRelativeAddrParams.tagOffset = atoi(pos + SKIP_DOT);
 
 
 				}
@@ -568,9 +581,9 @@ ESucsessFail setOperandAddrParams(SOperandAdressingParams* pOperandAdressingPara
 	else
 	{
 		pOperandAdressingParams->addrType = eEmmediateAddr;
-		if ((pos+1) != NULL)
+		if ((pos + SKIP_HASHTAG) != NULL)
 		{
-			pOperandAdressingParams->emmediateAdressingParams.number = atoi((pos + 1));
+			pOperandAdressingParams->emmediateAdressingParams.number = atoi((pos + SKIP_HASHTAG));
 		}	
 	}
 	return res;
@@ -609,7 +622,7 @@ ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressingParam
 	case eDirectaddr: /*Tag */
 
 		tagName = pAddrParams->directaddrParams.tagName;
-		pCodeInfo->tag = malloc(strlen(tagName) + 1);
+		pCodeInfo->tag = malloc(strlen(tagName) + CELL_FOR_NULL);
 
 		if (pCodeInfo->tag == NULL)
 		{
@@ -626,14 +639,14 @@ ESucsessFail generateCodeForOperand(SCodeinfo* pCodeInfo, SOperandAdressingParam
 	case eBaseRelativeAddr: /*Struct */
 
 		/* Set the struct offset*/
-		if (callCount == 1)
+		if (callCount == SET_OFFSET)
 		{
 			pCodeInfo->code.valBits.are = eAreAbsulute;
 			pCodeInfo->code.valBits.val = pAddrParams->baseRelativeAddrParams.tagOffset;
 		}
 		else /* Set the struct TAG */
 		{
-			pCodeInfo->tag = malloc(strlen(pAddrParams->baseRelativeAddrParams.tagName)+1);
+			pCodeInfo->tag = malloc(strlen(pAddrParams->baseRelativeAddrParams.tagName) + CELL_FOR_NULL);
 
 			if (pCodeInfo->tag == NULL)
 			{
@@ -856,7 +869,7 @@ ESucsessFail handleDataCmnd(char const* line)
 			strncpy(Value, strtPos, endPos - strtPos);
 			Value[endPos - strtPos] = '\0';
 			addData(atoi(Value));
-			strtPos = endPos + 1;
+			strtPos = endPos + SKIP_COMMA;
 		}
 	}
 
@@ -1027,15 +1040,15 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 	codeinfo.code.cmndBits.opcode = cmnd;
 	
 	/* Set the addrresing type*/
-	if (numOfOperands == 1)
+	if (numOfOperands == ONE_REG)
 	{
-		codeinfo.code.cmndBits.dstAdr = operandAdressingParams[0].addrType;
+		codeinfo.code.cmndBits.dstAdr = operandAdressingParams[FIRST].addrType;
 	}
 	
-	if (numOfOperands == 2)
+	if (numOfOperands == TWO_REGS)
 	{
-		codeinfo.code.cmndBits.srcAdr = operandAdressingParams[0].addrType;
-		codeinfo.code.cmndBits.dstAdr = operandAdressingParams[1].addrType;
+		codeinfo.code.cmndBits.srcAdr = operandAdressingParams[FIRST].addrType;
+		codeinfo.code.cmndBits.dstAdr = operandAdressingParams[SECOND].addrType;
 	}
 	
 	addCodeElemet(codeinfo);
@@ -1054,10 +1067,10 @@ ESucsessFail handleCodeLine(char const* line, ECodeCmnd cmnd)
 		else
 		{
 			/* Handle 2 registers - special case */
-			if ((numOfOperands ==2) &&
+			if ((numOfOperands == TWO_REGS) &&
 				(operIdx == 0) &&
-				(operandAdressingParams[0].addrType == eRegisterAddr) &&
-				(operandAdressingParams[1].addrType == eRegisterAddr))
+				(operandAdressingParams[FIRST].addrType == eRegisterAddr) &&
+				(operandAdressingParams[SECOND].addrType == eRegisterAddr))
 			{
 				/* don't add code until the second register */
 			}
@@ -1235,7 +1248,7 @@ int setOperandsString(SOperandAdressingParams operandAddrPrmsArray[])
 	}
 
 	/* Search for operands */
-	while (1)
+	while (TRUE)
 	{
 		if ((*currPos == ' ') || (*currPos == ',') || (*currPos == '\n'))
 		{
@@ -1270,7 +1283,7 @@ int setOperandsString(SOperandAdressingParams operandAddrPrmsArray[])
 			else
 			{
 				/* End of word */
-				operandAddrPrmsArray[numOperandFound].operandString = malloc(wordLength+1);
+				operandAddrPrmsArray[numOperandFound].operandString = malloc(wordLength + CELL_FOR_NULL);
 				strncpy(operandAddrPrmsArray[numOperandFound].operandString, strtPos, wordLength);
 				operandAddrPrmsArray[numOperandFound].operandString[wordLength] = 0;
 				numOperandFound++;

@@ -38,7 +38,7 @@ ESucsessFail addExternUsage(SCodeinfo codeInfo);
 /* Services*/
 ESucsessFail initDataBase();
 ESucsessFail istagExist(char const* tag, ESucsessFail* pIsExternalTag, short* pTagAddr);
-int reallocAndCopyBuffer(void** outFileData, int currSize);
+size_t doubleSizeRealloc(void** outFileData, size_t oldSize);
 ESucsessFail updateTagsBaseAddress();
 ESucsessFail updateEntryAddress();
 ESucsessFail generateCodeForTag();

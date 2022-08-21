@@ -6,6 +6,8 @@
 #include "SecondScanHandler.h"
 #include "generator.h"
 
+#define SKIP_PROG_NAME 1
+
 /* private function declerations */
 static void processFile(char* fileName);
 
@@ -27,14 +29,14 @@ int main(int argc, char** argv)
 {
     int i;    
 
-    for (i = 1; i < argc; i++)
+    for (i = SKIP_PROG_NAME; i < argc; i++)
     {
         char* fullFileName = NULL;
         
 
-        if ((fullFileName = malloc(strlen(argv[i]) + strlen(".as") + 1)) != NULL)
+        if ((fullFileName = malloc(strlen(argv[i]) + strlen(".as") + CELL_FOR_NULL)) != NULL)
         {
-            fullFileName[0] = '\0';   /* ensures the memory is an empty string */
+            *fullFileName = '\0';   /* ensures the memory is an empty string */
             strcat(fullFileName, argv[i]);
 
             /* Save the name of the currently handled file */
@@ -98,28 +100,14 @@ void processFile(char* fileName)
         if (fileSize > 0)
         {
             /* Allocate buffer for data read*/
-            rawCodeData = malloc(fileSize);
+            rawCodeData = malloc(fileSize + CELL_FOR_NULL);
 
             if (rawCodeData)
             {
                 /* Read all the file content*/
-                while (1)
+                for (filePos = 0; (fileData = fgetc(file)) != EOF; filePos++)
                 {
-                    fileData = fgetc(file);
-
-                    if (fileData == EOF)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        if (filePos < fileSize)
-                        {
-                            rawCodeData[filePos] = (char)fileData;
-                        }
-                    }
-
-                    filePos++;
+                    rawCodeData[filePos] = (char)fileData;
                 }
 
                 /* End the string */

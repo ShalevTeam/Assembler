@@ -4,10 +4,11 @@
 
 /*Local macros */
 #define FILE_SIZE_FACTOR  5
+#define CELL_BEFORE -1
 
 /* members */
-static unsigned long m_maxAllocForOutput = MAX_ASSEBLER_FILE_SIZE * FILE_SIZE_FACTOR;
-unsigned long m_outputlength = 0; /*length of output file */
+static size_t m_maxAllocForOutput = MAX_ASSEBLER_FILE_SIZE * FILE_SIZE_FACTOR;
+static size_t m_outputlength = 0; /*length of output file */
 
 /* Private functions*/
 static char* macro_replace(char const* orig, char const* rep, char const* with);
@@ -53,7 +54,7 @@ ESucsessFail handleMacros(char* inFileData, char** outFileData)
 
 		while (m_outputlength > m_maxAllocForOutput)
 		{
-			m_maxAllocForOutput = reallocAndCopyBuffer(outFileData, m_maxAllocForOutput);
+			m_maxAllocForOutput = doubleSizeRealloc(outFileData, m_maxAllocForOutput);
 
 			if (m_maxAllocForOutput == 0)
 			{
@@ -67,11 +68,10 @@ ESucsessFail handleMacros(char* inFileData, char** outFileData)
 		if (*outFileData)
 		{
 			/* Scan the file once to handle macro definitions */
-			while (*curPos != '\0')
+			while (curPos && *curPos != '\0')
 			{
 				lineNumber++;
 
-				/* read line */
 				curPos = readLine(curPos, line);
 
 				if (curPos != NULL)
@@ -81,10 +81,10 @@ ESucsessFail handleMacros(char* inFileData, char** outFileData)
 				}
 			}
 
-			/* build  the initial output */
+			/* Build  the initial output */
 			strcpy(*outFileData, inFileData);
 
-			/* replace macro usage in the output file */
+			/* Replace macro usage in the output file */
 			macroList = getMacrosList();
 			while (macroList != NULL)
 			{
@@ -94,7 +94,7 @@ ESucsessFail handleMacros(char* inFileData, char** outFileData)
 				{
 					if (strlen(tmpFileData) > m_maxAllocForOutput)
 					{
-						m_maxAllocForOutput = reallocAndCopyBuffer(outFileData, m_maxAllocForOutput);
+						m_maxAllocForOutput = doubleSizeRealloc(outFileData, m_maxAllocForOutput);
 
 						if (m_maxAllocForOutput == 0)
 						{
@@ -188,14 +188,14 @@ unsigned long addMacrosToList(char** curPos, int currLineNumber)
 			endPos++;
 
 			/* Replac the macro definition in the input file with empty line */
-			while (startPos < endPos-1)
+			while (startPos < endPos + CELL_BEFORE)
 			{
 				*startPos = ' ';
 				startPos++;
 			}
 
 			/* Get the macro string */
-			while (1)
+			while (TRUE)
 			{
 				/* read line */
 				startPos = endPos;
@@ -207,7 +207,7 @@ unsigned long addMacrosToList(char** curPos, int currLineNumber)
 				if (strstr(line, "endmacro") != NULL)
 				{
 					/* Replac the macro definition in the input file with spaces to keep the line number */
-					while (startPos < endPos - 1)
+					while (startPos < endPos + CELL_BEFORE)
 					{
 						*startPos = ' ';
 						startPos++;
@@ -225,7 +225,7 @@ unsigned long addMacrosToList(char** curPos, int currLineNumber)
 				}
 
 				/* Replac the macro definition in the input file with spaces */
-				while (startPos < endPos-1)
+				while (startPos < endPos + CELL_BEFORE)
 				{
 					*startPos = ' ';
 					startPos++;
@@ -262,9 +262,9 @@ char* macro_replace(char const* orig, char const* rep, char const* with)
 	char* result; /* the return string */
 	char const* ins;    /* the next insert point */
 	char* tmp;    /* varies */
-	int len_rep;  /* length of rep (the string to remove) */
-	int len_with; /* length of with (the string to replace rep with) */
-	int len_front; /* distance between rep and end of last rep */
+	size_t len_rep;  /* length of rep (the string to remove) */
+	size_t len_with; /* length of with (the string to replace rep with) */
+	size_t len_front; /* distance between rep and end of last rep */
 	int count;    /* number of replacements */
 
 	/* sanity checks and initialization */
@@ -288,7 +288,7 @@ char* macro_replace(char const* orig, char const* rep, char const* with)
 		return NULL;
 	}
 
-	tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + 1);
+	tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + CELL_FOR_NULL);
 
 	if (!result)
 		return NULL;

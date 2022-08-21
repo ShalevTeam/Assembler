@@ -1,6 +1,8 @@
 
 #include "databaseHandler.h"
 
+#define DOUBLE_SIZE 2
+
 /* Private memebers */
 static SEntryElement* m_entryList = NULL; /* List of all entry and there address */
 static int m_lineNumber = 0;
@@ -11,7 +13,7 @@ SCodeElement* m_codeList = NULL; /* The code that was generated */
 ScodeWord* m_pDataSeqtion = NULL; /* The data seq */
 static int m_codePos = CODE_INITIAL_ADDR;
 static int m_dataPos = 0;
-static int m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
+static size_t m_maxDataLength = MAX_ASSEBLER_FILE_SIZE;
 char m_asemblerFileName[MAX_FILE_NAME];
 char m_objectFileName[MAX_FILE_NAME];
 char m_externFileName[MAX_FILE_NAME];
@@ -446,7 +448,7 @@ ESucsessFail addMacroElemet(char const* macroName, char const* macroString)
 
 		if (macroName)
 		{
-			newElem->macroName = malloc(strlen(macroName) + 1);
+			newElem->macroName = malloc(strlen(macroName) + CELL_FOR_NULL);
 			if (newElem->macroName)
 			{
 				strcpy(newElem->macroName, macroName);
@@ -454,7 +456,7 @@ ESucsessFail addMacroElemet(char const* macroName, char const* macroString)
 
 				if (macroString)
 				{
-					newElem->macroData = malloc(strlen(macroString) + 1);
+					newElem->macroData = malloc(strlen(macroString) + CELL_FOR_NULL);
 					if (newElem->macroData)
 					{
 						strcpy(newElem->macroData, macroString);
@@ -539,7 +541,7 @@ ESucsessFail addEntryElemet(char const* tagName)
 
 		if (tagName)
 		{
-			newElem->tagName = malloc(strlen(tagName) + 1);
+			newElem->tagName = malloc(strlen(tagName) + CELL_FOR_NULL);
 			if (newElem->tagName)
 			{
 				strcpy(newElem->tagName, tagName);
@@ -634,7 +636,7 @@ ESucsessFail addDataTagElemet(char const* tagName, int tagLength, EtagType tagTy
 
 		if (tagName)
 		{
-			newElem->tagName = malloc(tagLength + 1);
+			newElem->tagName = malloc(tagLength + CELL_FOR_NULL);
 			if (newElem->tagName)
 			{
 				strncpy(newElem->tagName, tagName, tagLength);
@@ -681,7 +683,7 @@ ESucsessFail addData(short val)
 
 	if (m_dataPos >= m_maxDataLength)
 	{
-		m_maxDataLength = reallocAndCopyBuffer(&m_pDataSeqtion, m_maxDataLength * sizeof(ScodeWord));
+		m_maxDataLength = doubleSizeRealloc(&m_pDataSeqtion, m_maxDataLength * sizeof(ScodeWord));
 	}
 
 	if (m_maxDataLength == 0)
@@ -740,7 +742,7 @@ ESucsessFail addExternElemet(char const* tagName)
 		{
 			latest->externUseAddrList = NULL;
 
-			latest->tagName = malloc(strlen(tagName)+1);
+			latest->tagName = malloc(strlen(tagName) + CELL_FOR_NULL);
 
 			if (latest->tagName)
 			{
@@ -823,7 +825,7 @@ ESucsessFail addCodeElemet(SCodeinfo codeInfo)
 
 		if (codeInfo.tag)
 		{
-			newElem->codeInfo.tag = malloc(strlen(codeInfo.tag) + 1);
+			newElem->codeInfo.tag = malloc(strlen(codeInfo.tag) + CELL_FOR_NULL);
 			if (newElem->codeInfo.tag)
 			{
 				strcpy(newElem->codeInfo.tag, codeInfo.tag);
@@ -988,10 +990,9 @@ ESucsessFail istagExist(char const* tag, ESucsessFail* pIsExternalTag, short* pT
 }
 
 /******************************************************************************
-* Function : reallocAndCopyBuffer()
+* Function : doubleSizeRealloc()
 *
-*  This function is used to allocate a buffer to twice the size of the original size and
-*  copy all the old data to the new buffer
+*  This function is used to reallocate a buffer to twice the size of the original buffer.
 *
 * \param
 *  void** allocatedBuf: INPUT/OUTPUT:pointer to the old/new buffer
@@ -1001,23 +1002,18 @@ ESucsessFail istagExist(char const* tag, ESucsessFail* pIsExternalTag, short* pT
 *  int: the new size or 0 if fail
 *
 *******************************************************************************/
-int reallocAndCopyBuffer(void** allocatedBuf, int oldSize)
+size_t doubleSizeRealloc(void** allocatedBuf, size_t oldSize)
 {
-	int newSize = oldSize * 2;
+	size_t newSize = oldSize * DOUBLE_SIZE;
 
 	/* Save the address of the old data */
 	void** oldBuf = allocatedBuf;
 
 	/* allocate new buf */
-	*allocatedBuf = malloc(newSize);
+	*allocatedBuf = realloc(*oldBuf, newSize);
 
 	/* Copy data from old buf to the new one */
-	if (*allocatedBuf)
-	{
-		memcpy(allocatedBuf, oldBuf, oldSize);
-		free(oldBuf);
-	}
-	else
+	if (*allocatedBuf == NULL)
 	{
 		printf("Err on line %d Allocation failed\n", getCurrentLineNumber());
 		newSize = 0;
